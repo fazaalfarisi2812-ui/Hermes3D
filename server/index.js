@@ -1,11 +1,42 @@
 const http = require("node:http");
 const https = require("node:https");
+const fs = require("node:fs");
+const path = require("node:path");
 const next = require("next");
 
 const { createAccessGate } = require("./access-gate");
 const { createGatewayProxy } = require("./gateway-proxy");
 const { assertPublicHostAllowed, resolveHosts } = require("./network-policy");
 const { loadUpstreamGatewaySettings } = require("./studio-settings");
+
+const loadDotenvFile = (filePath) => {
+  if (!fs.existsSync(filePath)) return;
+  const content = fs.readFileSync(filePath, "utf8");
+  for (const rawLine of content.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+    const match = line.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
+    if (!match) continue;
+    const [, key, rawValue] = match;
+    if (process.env[key] !== undefined) continue;
+    let value = rawValue.trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    process.env[key] = value;
+  }
+};
+
+const loadRuntimeEnv = () => {
+  const cwd = process.cwd();
+  loadDotenvFile(path.join(cwd, ".env.local"));
+  loadDotenvFile(path.join(cwd, ".env"));
+};
+
+loadRuntimeEnv();
 
 const resolvePort = () => {
   const raw = process.env.PORT?.trim() || "3000";
@@ -20,13 +51,11 @@ const resolvePathname = (url) => {
   return (idx === -1 ? raw : raw.slice(0, idx)) || "/";
 };
 
-const CERT_DIR = require("node:path").join(__dirname, "..", ".certs");
-const CERT_PATH = require("node:path").join(CERT_DIR, "localhost.crt");
-const KEY_PATH = require("node:path").join(CERT_DIR, "localhost.key");
+const CERT_DIR = path.join(__dirname, "..", ".certs");
+const CERT_PATH = path.join(CERT_DIR, "localhost.crt");
+const KEY_PATH = path.join(CERT_DIR, "localhost.key");
 
 const generateHttpsCert = async () => {
-  const fs = require("node:fs");
-
   // Re-use a saved cert so the browser only needs to trust it once.
   if (fs.existsSync(CERT_PATH) && fs.existsSync(KEY_PATH)) {
     return {

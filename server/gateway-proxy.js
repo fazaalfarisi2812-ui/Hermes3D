@@ -240,18 +240,29 @@ function createGatewayProxy(options) {
     };
 
     const forwardConnectFrame = (frame) => {
-      const browserHasAuth =
+      const browserHasExplicitSharedCredential =
         hasNonEmptyToken(frame.params) ||
         hasNonEmptyPassword(frame.params) ||
-        hasNonEmptyDeviceToken(frame.params) ||
-        hasCompleteDeviceAuth(frame.params);
+        hasNonEmptyDeviceToken(frame.params);
+      const browserHasDeviceAuth = hasCompleteDeviceAuth(frame.params);
 
-      const baseConnectFrame = browserHasAuth
-        ? frame
-        : {
+      // The bundled Hermes adapter accepts the normal shared gateway token.
+      // A browser can also attach a signed device payload, but that payload is
+      // not an alternative authentication method for this adapter. Preserve
+      // device auth while still adding the server-stored token. Other adapters
+      // retain their device-only flow because their signature can be scoped to
+      // an empty shared token.
+      const shouldInjectStoredToken =
+        Boolean(upstreamToken) &&
+        !browserHasExplicitSharedCredential &&
+        (!browserHasDeviceAuth || upstreamAdapterType === "hermes");
+
+      const baseConnectFrame = shouldInjectStoredToken
+        ? {
             ...frame,
             params: injectAuthToken(frame.params, upstreamToken),
-          };
+          }
+        : frame;
 
       const connectParams = isObject(baseConnectFrame.params)
         ? { ...baseConnectFrame.params }

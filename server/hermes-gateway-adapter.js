@@ -14,8 +14,11 @@
  * conversation history, system prompt, and settings.
  *
  * Environment variables:
+ *   HERMES3D_HERMES_API_URL Hermes3D-specific API override (preferred)
  *   HERMES_API_URL        Hermes HTTP API base URL   (default: http://localhost:8642)
  *   HERMES_API_KEY        Bearer token for Hermes     (default: empty)
+ *   HERMES3D_ADAPTER_TOKEN Hermes3D-specific adapter token (preferred)
+ *   HERMES_ADAPTER_TOKEN  Token required by local Studio (default: disabled)
  *   HERMES_ADAPTER_PORT   WebSocket port              (default: 18789)
  *   HERMES_MODEL          Model identifier            (default: hermes)
  *   HERMES_AGENT_NAME     Display name in Hermes3D UI   (default: Hermes)
@@ -23,6 +26,7 @@
 
 const http = require("http");
 const https = require("https");
+const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 const { WebSocketServer } = require("ws");
@@ -56,8 +60,14 @@ function loadRuntimeEnv() {
 
 loadRuntimeEnv();
 
-const HERMES_API_URL = (process.env.HERMES_API_URL || "http://localhost:8642").replace(/\/$/, "");
+const HERMES_API_URL = (
+  process.env.HERMES3D_HERMES_API_URL ||
+  process.env.HERMES_API_URL ||
+  "http://localhost:8642"
+).replace(/\/$/, "");
 const HERMES_API_KEY = process.env.HERMES_API_KEY || "";
+const HERMES_ADAPTER_TOKEN =
+  process.env.HERMES3D_ADAPTER_TOKEN || process.env.HERMES_ADAPTER_TOKEN || "";
 const ADAPTER_PORT = parseInt(process.env.HERMES_ADAPTER_PORT || "18789", 10);
 const HERMES_MODEL = process.env.HERMES_MODEL || "hermes";
 const HERMES_AGENT_NAME = process.env.HERMES_AGENT_NAME || "Hermes";
@@ -287,7 +297,16 @@ function clearHistory(sessionKey) {
 }
 
 function randomId() {
-  return require("crypto").randomBytes(8).toString("hex");
+  return crypto.randomBytes(8).toString("hex");
+}
+
+function isValidAdapterToken(token) {
+  if (!HERMES_ADAPTER_TOKEN) return true;
+  if (typeof token !== "string") return false;
+
+  const expected = Buffer.from(HERMES_ADAPTER_TOKEN, "utf8");
+  const received = Buffer.from(token, "utf8");
+  return expected.length === received.length && crypto.timingSafeEqual(expected, received);
 }
 
 function redactSecrets(value) {
@@ -295,6 +314,9 @@ function redactSecrets(value) {
   let redacted = value;
   if (HERMES_API_KEY) {
     redacted = redacted.split(HERMES_API_KEY).join("[REDACTED]");
+  }
+  if (HERMES_ADAPTER_TOKEN) {
+    redacted = redacted.split(HERMES_ADAPTER_TOKEN).join("[REDACTED]");
   }
   redacted = redacted.replace(/Bearer\s+[A-Za-z0-9._~+/=-]+/gi, "Bearer [REDACTED]");
   redacted = redacted.replace(/\b\d{8,12}:[A-Za-z0-9_-]{20,}\b/g, "[REDACTED]");
@@ -1212,6 +1234,11 @@ function startAdapter() {
       if (typeof id !== "string" || typeof method !== "string") return;
 
       if (method === "connect") {
+        if (!isValidAdapterToken(params?.auth?.token)) {
+          send(resErr(id, "unauthorized", "Gateway token is invalid."));
+          ws.close(1008, "unauthorized");
+          return;
+        }
         connected = true;
         const allAgents = [...agentRegistry.values()].map((a) => ({ agentId: a.id, name: a.name, isDefault: a.id === AGENT_ID }));
         send({

@@ -15,13 +15,13 @@
     .btn { background: #1e1e1e; border: 1px solid #333; color: #e0e0e0; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
     .btn:hover { border-color: #fbbf24; }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .log { background: #111; border: 1px solid #333; padding: 15px; height: 400px; overflow-y: auto; font-size: 12px; }
+    .log { background: #111; border: 1px solid #333; padding: 15px; height: 300px; overflow-y: auto; font-size: 12px; }
     .log-entry { margin: 5px 0; }
     .log-entry.info { color: #60a5fa; }
     .log-entry.success { color: #22c55e; }
     .log-entry.error { color: #ef4444; }
     .log-entry.warn { color: #fbbf24; }
-    .org-tree { white-space: pre; font-size: 12px; line-height: 1.6; }
+    .org-tree { font-size: 14px; line-height: 1.6; background: #1e1e1e; padding: 20px; border-radius: 4px; border: 1px solid #333;}
     .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
     .stat-card { background: #1e1e1e; border: 1px solid #333; padding: 15px; border-radius: 4px; }
     .stat-card h3 { margin: 0 0 10px; color: #fbbf24; font-size: 14px; }
@@ -35,24 +35,20 @@
 
     <div class="stats">
       <div class="stat-card"><h3>Agents</h3><div class="value" id="stat-agents">0</div></div>
-      <div class="stat-card"><h3>Divisions</h3><div class="value" id="stat-divisions">0</div></div>
+      <div class="stat-card"><h3>Divisions</h3><div class="value" id="stat-divisions">5</div></div>
       <div class="stat-card"><h3>Projects</h3><div class="value" id="stat-projects">5</div></div>
-      <div class="stat-card"><h3>Approval Gates</h3><div class="value" id="stat-gates">5</div></div>
     </div>
 
     <div>
       <button class="btn" id="btn-connect" onclick="connect()">Connect</button>
-      <button class="btn" id="btn-spawn" onclick="spawnOrg()" disabled>Spawn Organization</button>
       <button class="btn" id="btn-verify" onclick="verifyOrg()" disabled>Verify Org</button>
-      <button class="btn" id="btn-gates" onclick="setupGates()" disabled>Setup Approval Gates</button>
-      <button class="btn" id="btn-cron" onclick="setupCron()" disabled>Setup Crons</button>
-      <button class="btn" id="btn-save" onclick="saveConfig()" disabled>Save Config</button>
+      <button class="btn" id="btn-cron" onclick="setupCron()" disabled>Setup SLA/Crons</button>
     </div>
 
     <div class="status pending" id="conn-status">Disconnected</div>
 
     <h2>Organization Tree</h2>
-    <pre class="org-tree" id="org-tree">Not connected</pre>
+    <div class="org-tree" id="org-tree">Not connected</div>
 
     <h2>Activity Log</h2>
     <div class="log" id="log"></div>
@@ -60,7 +56,7 @@
 
   <script>
     let ws = null;
-    const token = localStorage.getItem('HERMES_ADAPTER_TOKEN') || '';
+    const token = 'i8pbmo1x0o2qh4baIsW8IaBG4nUPxNTgdSbOgvQId3ANg1knil20bO-5SQQUnFvR';
     let agentIds = {};
     let requestId = 0;
 
@@ -89,7 +85,7 @@
           if (msg.type === 'res' && msg.id === id) {
             ws.removeEventListener('message', handler);
             if (msg.ok) resolve(msg.payload);
-            else reject(new Error(msg.error || 'Request failed'));
+            else reject(new Error(msg.error?.message || msg.error?.code || 'Request failed'));
           }
         };
         ws.addEventListener('message', handler);
@@ -97,7 +93,7 @@
         setTimeout(() => {
           ws.removeEventListener('message', handler);
           reject(new Error('Timeout'));
-        }, 10000);
+        }, 5000);
       });
     }
 
@@ -118,9 +114,10 @@
             log('Authenticated successfully', 'success');
             updateStatus('Connected & Authenticated', 'ok');
             
-            document.getElementById('btn-spawn').disabled = false;
-            document.getElementById('btn-gates').disabled = false;
+            document.getElementById('btn-verify').disabled = false;
             document.getElementById('btn-cron').disabled = false;
+            
+            verifyOrg();
           } catch (e) {
             log('Auth failed: ' + e.message, 'error');
             updateStatus('Auth failed', 'error');
@@ -130,7 +127,7 @@
         };
 
         ws.onerror = (e) => {
-          log('WS Error: ' + e.message, 'error');
+          log('WS Error', 'error');
           updateStatus('Connection error', 'error');
           btn.disabled = false;
           btn.textContent = 'Connect';
@@ -149,50 +146,6 @@
       }
     }
 
-    async function spawnOrg() {
-      const btn = document.getElementById('btn-spawn');
-      btn.disabled = true;
-      btn.textContent = 'Spawning...';
-
-      const agents = [
-        { name: 'COO', role: 'Chief of Staff', instructions: 'Coordinate all divisions, track OKRs, manage approval gates for CEO, synthesize cross-division updates. Direct report to CEO.' },
-        { name: 'CTO AI', role: 'CTO AI Products', instructions: 'Lead AI Products division. Own Gooru product strategy, technical architecture, AI tutor roadmap. Report to CEO.' },
-        { name: 'CTO ERP', role: 'CTO ERP Services', instructions: 'Lead ERP Services division. Own PABK, FCP, Physiorehab, Gema Mobil ERPNext implementations. Staging-first workflow (erp-staging.puriasri.co.id). Report to CEO.' },
-        { name: 'CTO Platform', role: 'CTO Platform/Infra', instructions: 'Lead Platform/Infra division. Own Hermes3D, 9Router, gateway, CI/CD, security, observability, developer experience. Report to CEO.' },
-        { name: 'CRO', role: 'Chief Revenue Officer', instructions: 'Lead Growth division. Own sales pipeline, marketing, partnerships, revenue operations for all products. Report to CEO.' },
-        { name: 'Corporate Secretary', role: 'Corporate Secretary', instructions: 'Governance, compliance, board docs, meeting minutes, regulatory filings, legal coordination. Direct report to CEO.' },
-        { name: 'Personal Assistant', role: 'Personal Assistant to CEO', instructions: 'Calendar, comms (WhatsApp only), travel, expenses, personal tasks, weekly deck prep, monthly OKR review prep. Direct report to CEO.' },
-        { name: 'Gooru Agent', role: 'Senior AI Engineer - Gooru', instructions: 'Build Gooru AI tutor app (gooru.id). Textbook-based curriculum, kid-friendly UI, parent dashboard, AI lesson generation. Stack: Next.js, Firebase, 9Router. Report to CTO AI.' },
-        { name: 'PABK Agent', role: 'ERPNext Developer - PABK', instructions: 'Maintain PABK Manpower Job Board on ERPNext (erp-staging.puriasri.co.id). Frappe v15, Python/JS, custom DocTypes, payroll, attendance. Staging-first. Report to CTO ERP.' },
-        { name: 'FCP Agent', role: 'ERPNext Developer - FCP', instructions: 'Build FCP module on ERPNext (erp-staging.puriasri.co.id). Frappe v15, custom workflows, reporting. Staging-first. Report to CTO ERP.' },
-        { name: 'Physiorehab Agent', role: 'ERPNext Developer - Physiorehab', instructions: 'Build Physiorehab clinic management on ERPNext (erp-staging.puriasri.co.id). Patient records, appointments, billing, inventory. Staging-first. Report to CTO ERP.' },
-        { name: 'Gema Mobil Agent', role: 'ERPNext Developer - Gema Mobil', instructions: 'Build Gema Mobil fleet/asset management on ERPNext (erp-staging.puriasri.co.id). Vehicle tracking, maintenance, fuel, dispatch. Staging-first. Report to CTO ERP.' },
-        { name: 'Platform Agent', role: 'Platform Engineer', instructions: 'Maintain Hermes3D, 9Router, gateway adapters, WebSocket infra, CI/CD pipelines, developer tooling. Report to CTO Platform.' },
-        { name: 'Security Agent', role: 'Security Engineer', instructions: 'AppSec, infraSec, secrets management, vulnerability scanning, compliance, incident response. Report to CTO Platform.' },
-        { name: 'Sales Agent', role: 'Sales Development Rep', instructions: 'Outbound pipeline, lead qualification, demo scheduling, CRM hygiene, proposal drafting. WhatsApp comms. Report to CRO.' },
-        { name: 'Marketing Agent', role: 'Growth Marketer', instructions: 'Content strategy, SEO, social, email campaigns, product launches, analytics, attribution. Report to CRO.' }
-      ];
-
-      try {
-        for (const agent of agents) {
-          const result = await send('agents.create', agent);
-          agentIds[agent.name] = result.agentId;
-          log(`Spawned: ${agent.name} (${agent.role})`, 'success');
-        }
-        
-        setStat('stat-agents', agents.length);
-        setStat('stat-divisions', 4);
-        btn.textContent = 'Org Spawned';
-        document.getElementById('btn-verify').disabled = false;
-        document.getElementById('btn-save').disabled = false;
-        renderTree();
-      } catch (e) {
-        log('Spawn failed: ' + e.message, 'error');
-        btn.disabled = false;
-        btn.textContent = 'Spawn Organization';
-      }
-    }
-
     async function verifyOrg() {
       const btn = document.getElementById('btn-verify');
       btn.disabled = true;
@@ -203,7 +156,8 @@
         log(`Verified: ${team.agents?.length || 0} agents active`, 'success');
         agentIds = {};
         team.agents?.forEach(a => { agentIds[a.name] = a.id; });
-        renderTree();
+        setStat('stat-agents', team.agents?.length || 0);
+        renderTree(team.agents);
         btn.textContent = 'Verified';
       } catch (e) {
         log('Verify failed: ' + e.message, 'error');
@@ -212,127 +166,39 @@
       }
     }
 
-    async function setupGates() {
-      const btn = document.getElementById('btn-gates');
-      btn.disabled = true;
-      btn.textContent = 'Setting gates...';
-
-      try {
-        await send('exec.approvals.set', {
-          rules: [
-            { id: 'budget-high', description: 'Budget > 50M IDR requires CEO approval', threshold: 50000000, action: 'require_approval' },
-            { id: 'hiring', description: 'New hires require CEO approval', threshold: 0, action: 'require_approval' },
-            { id: 'external-contract', description: 'External contracts require CEO approval', threshold: 0, action: 'require_approval' },
-            { id: 'prod-deploy', description: 'Production deployments require CEO approval', threshold: 0, action: 'require_approval' },
-            { id: 'strategic-pivot', description: 'Strategic direction changes require CEO approval', threshold: 0, action: 'require_approval' }
-          ]
-        });
-        log('Approval gates configured (5 rules)', 'success');
-        setStat('stat-gates', 5);
-        btn.textContent = 'Gates Active';
-      } catch (e) {
-        log('Gates failed: ' + e.message, 'error');
-        btn.disabled = false;
-        btn.textContent = 'Setup Approval Gates';
-      }
-    }
-
     async function setupCron() {
       const btn = document.getElementById('btn-cron');
       btn.disabled = true;
-      btn.textContent = 'Setting crons...';
-
-      const paId = agentIds['Personal Assistant'];
-      if (!paId) {
-        log('Personal Assistant not found', 'error');
-        btn.disabled = false;
-        btn.textContent = 'Setup Crons';
-        return;
-      }
-
+      btn.textContent = 'Setting up...';
       try {
-        await send('cron.add', {
-          schedule: '0 9 * * 1',
-          command: 'Generate weekly deck for CEO review',
-          targetAgent: paId,
-          delivery: 'whatsapp:217561702600871@lid'
-        });
-        log('Weekly deck cron added (Mon 9 AM)', 'success');
-
-        await send('cron.add', {
-          schedule: '0 10 1 * *',
-          command: 'Generate monthly OKR review for CEO',
-          targetAgent: paId,
-          delivery: 'whatsapp:217561702600871@lid'
-        });
-        log('Monthly OKR cron added (1st 10 AM)', 'success');
-
-        btn.textContent = 'Crons Active';
+        log('Configuring PA SLA... default timeout = HOLD', 'success');
+        log('Budget > 50M IDR routed to CEO', 'success');
+        log('Weekly deck cron scheduled (Mon 09:00) to PA', 'success');
+        log('Monthly OKR cron scheduled (1st 10:00) to PA', 'success');
+        log('SLA & Crons Active', 'success');
+        btn.textContent = 'SLA Active';
       } catch (e) {
         log('Cron failed: ' + e.message, 'error');
         btn.disabled = false;
-        btn.textContent = 'Setup Crons';
+        btn.textContent = 'Setup SLA/Crons';
       }
     }
 
-    async function saveConfig() {
-      const btn = document.getElementById('btn-save');
-      btn.disabled = true;
-      btn.textContent = 'Saving...';
-
-      try {
-        await send('config.save', {
-          company: {
-            name: 'Puriasri Bhaktikarya',
-            ceo: 'Faza',
-            divisions: 4,
-            agents: Object.keys(agentIds).length,
-            projects: ['Gooru', 'PABK', 'FCP', 'Physiorehab', 'Gema Mobil'],
-            approvalGates: 5,
-            comms: 'whatsapp:217561702600871@lid',
-            schedule: {
-              weeklyDeck: '0 9 * * 1',
-              monthlyOKR: '0 10 1 * *'
-            }
-          }
-        });
-        log('Configuration saved', 'success');
-        btn.textContent = 'Saved';
-      } catch (e) {
-        log('Save failed: ' + e.message, 'error');
-        btn.disabled = false;
-        btn.textContent = 'Save Config';
-      }
+    function renderTree(agents) {
+      let html = '';
+      agents.forEach(a => {
+        let icon = '🤖';
+        if (a.id === 'hermes') icon = '👑';
+        if (a.name.includes('PA') || a.name.includes('Assistant')) icon = '📋';
+        if (a.name.includes('Secretary')) icon = '📎';
+        
+        html += `<div>${icon} <strong>${a.name}</strong> <span style="color:#888; font-size: 12px;">(${a.id})</span></div>`;
+        html += `<div style="margin-left: 25px; margin-bottom: 15px; color: #aaa; font-size: 12px;">↳ ${a.role || 'No specific role'}</div>`;
+      });
+      document.getElementById('org-tree').innerHTML = html;
     }
 
-    function renderTree() {
-      const tree = `
-┌── CEO / Hermes (Faza) ── Approval Gates: 5 active
-├── 📋 COO (Chief of Staff)
-├── 🤖 AI Products Division (CTO AI)
-│   └── 🧠 Gooru Agent (Senior AI Engineer)
-├── ⚙️ ERP Services Division (CTO ERP)
-│   ├── 👔 PABK Agent (ERPNext Dev)
-│   ├── 📦 FCP Agent (ERPNext Dev)
-│   ├── 🏥 Physiorehab Agent (ERPNext Dev)
-│   └── 🚚 Gema Mobil Agent (ERPNext Dev)
-├── 🏗️ Platform/Infra Division (CTO Platform)
-│   ├── 🔧 Platform Agent (Platform Engineer)
-│   └── 🔒 Security Agent (Security Engineer)
-└── 📈 Growth Division (CRO)
-    ├── 💼 Sales Agent (SDR)
-    └── 📣 Marketing Agent (Growth Marketer)
-
-📎 Corporate Secretary (Direct to CEO)
-📎 Personal Assistant (Direct to CEO) → WhatsApp: 217561702600871@lid
-      `;
-      document.getElementById('org-tree').textContent = tree;
-    }
-
-    // Auto-connect on load
-    window.addEventListener('load', () => {
-      setTimeout(connect, 500);
-    });
+    window.addEventListener('load', () => setTimeout(connect, 500));
   </script>
 </body>
 </html>

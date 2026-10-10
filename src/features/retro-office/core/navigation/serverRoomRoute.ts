@@ -1,29 +1,31 @@
 import type { ServerRoomRoute } from "@/features/retro-office/core/types";
 
 export const SERVER_ROOM_TARGET = {
-  x: 110,
-  y: 655,
+  x: 1270,
+  y: 780,
   facing: 0,
 };
 
 const SERVER_ROOM_DOOR_OUTER_TARGET = {
-  x: 268,
-  y: 624,
+  x: 1270,
+  y: 870,
   facing: 0,
 };
 
 const SERVER_ROOM_DOOR_INNER_TARGET = {
-  x: 188,
-  y: 624,
+  x: 1270,
+  y: 820,
   facing: 0,
 };
+
+const DOOR_APPROACH_RADIUS = 60;
 
 export const resolveServerRoomRoute = (
   x: number,
   y: number,
 ): ServerRoomRoute => {
   const insideRoom =
-    x <= SERVER_ROOM_DOOR_INNER_TARGET.x + 8 ||
+    (x >= 1190 && x <= 1470 && y >= 660 && y <= 830) ||
     Math.hypot(
       x - SERVER_ROOM_DOOR_INNER_TARGET.x,
       y - SERVER_ROOM_DOOR_INNER_TARGET.y,
@@ -38,11 +40,10 @@ export const resolveServerRoomRoute = (
   }
 
   const withinDoorThreshold =
-    x <= SERVER_ROOM_DOOR_OUTER_TARGET.x - 8 ||
     Math.hypot(
       x - SERVER_ROOM_DOOR_OUTER_TARGET.x,
       y - SERVER_ROOM_DOOR_OUTER_TARGET.y,
-    ) < 18;
+    ) < DOOR_APPROACH_RADIUS;
   if (withinDoorThreshold) {
     return {
       stage: "door_inner",

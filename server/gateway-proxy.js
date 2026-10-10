@@ -23,6 +23,14 @@ const MAX_FRAMES_PER_SECOND = 60;
 /** Allow short startup bursts before rate limiting. */
 const MAX_FRAME_BURST = 120;
 
+/**
+ * The local Hermes roster can legitimately issue one bootstrap request per
+ * agent plus follow-up state reads. Keep the abuse guard for normal sockets,
+ * but give the trusted local Hermes transport enough room for larger rosters.
+ */
+const LOCAL_HERMES_MAX_FRAMES_PER_SECOND = 240;
+const LOCAL_HERMES_MAX_FRAME_BURST = 512;
+
 const buildErrorResponse = (id, code, message) => {
   return {
     type: "res",
@@ -60,6 +68,16 @@ const createFrameRateLimiter = (
   };
 
   return {
+    configure(next = {}) {
+      if (Number.isFinite(next.maxPerSecond) && next.maxPerSecond > 0) {
+        maxPerSecond = next.maxPerSecond;
+      }
+      if (Number.isFinite(next.maxBurst) && next.maxBurst > 0) {
+        maxBurst = next.maxBurst;
+      }
+      tokens = maxBurst;
+      lastRefillAt = Date.now();
+    },
     check() {
       refill();
       if (tokens < 1) {
@@ -141,6 +159,15 @@ const resolveOriginForUpstream = (upstreamUrl) => {
       : url.hostname;
   const host = url.port ? `${hostname}:${url.port}` : hostname;
   return `${proto}//${host}`;
+};
+
+const isLoopbackUpstream = (upstreamUrl) => {
+  try {
+    const hostname = new URL(upstreamUrl).hostname.toLowerCase();
+    return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
+  } catch {
+    return false;
+  }
 };
 
 const hasNonEmptyToken = (params) => {
@@ -291,6 +318,12 @@ function createGatewayProxy(options) {
         upstreamToken = typeof settings?.token === "string" ? settings.token.trim() : "";
         upstreamAdapterType =
           typeof settings?.adapterType === "string" ? settings.adapterType.trim() : "";
+        if (upstreamAdapterType === "hermes" && isLoopbackUpstream(upstreamUrl)) {
+          frameRateLimiter.configure({
+            maxPerSecond: LOCAL_HERMES_MAX_FRAMES_PER_SECOND,
+            maxBurst: LOCAL_HERMES_MAX_FRAME_BURST,
+          });
+        }
       } catch (err) {
         logError("Failed to load upstream gateway settings.", err);
         pendingUpstreamSetupError = {
@@ -353,6 +386,13 @@ function createGatewayProxy(options) {
           origin: upstreamOrigin,
           handshakeTimeout: upstreamHandshakeTimeoutMs,
         });
+
+        // Add explicit open handler
+        upstreamWs.on('open', () => {
+          log('[gateway-proxy] upstream raw WebSocket opened');
+          upstreamReady = true;
+          maybeForwardPendingConnect();
+        });
       }
 
       upstreamHandshakeTimeoutId = setTimeout(() => {
@@ -369,14 +409,49 @@ function createGatewayProxy(options) {
         }
       }, upstreamHandshakeTimeoutMs);
 
-      upstreamWs.on("open", () => {
-        if (upstreamHandshakeTimeoutId !== null) {
-          clearTimeout(upstreamHandshakeTimeoutId);
-          upstreamHandshakeTimeoutId = null;
-        }
-        upstreamReady = true;
-        maybeForwardPendingConnect();
-      });
+      if (upstreamAdapterType === EMBEDDED_ADAPTER_TYPE) {
+              // Embedded bridge is in-process; wait for its "open" event which fires after
+              // the JSON-RPC client receives gateway.ready from 9Router.
+              // upstreamWs.once("open", () => {
+              //   if (upstreamHandshakeTimeoutId !== null) {
+              //     clearTimeout(upstreamHandshakeTimeoutId);
+              //     upstreamHandshakeTimeoutId = null;
+              //   }
+              //   upstreamReady = true;
+              //   maybeForwardPendingConnect();
+              // });
+              upstreamWs.once("open", () => {
+                log("[gateway-proxy] Embedded bridge opened; waiting for gateway.ready");
+              });
+              upstreamWs.on("ready", () => {
+                log("[gateway-proxy] Embedded bridge gateway.ready received");
+                if (upstreamHandshakeTimeoutId !== null) {
+                  clearTimeout(upstreamHandshakeTimeoutId);
+                  upstreamHandshakeTimeoutId = null;
+                }
+                upstreamReady = true;
+                maybeForwardPendingConnect();
+              });
+              // Also listen for "open" which now emits "ready" in the bridge, but let's make sure upstreamReady is set on open or ready
+              upstreamWs.on("open", () => {
+                log("[gateway-proxy] Embedded bridge open event received");
+                if (upstreamHandshakeTimeoutId !== null) {
+                  clearTimeout(upstreamHandshakeTimeoutId);
+                  upstreamHandshakeTimeoutId = null;
+                }
+                upstreamReady = true;
+                maybeForwardPendingConnect();
+              });
+              } else {
+        upstreamWs.on("open", () => {
+          if (upstreamHandshakeTimeoutId !== null) {
+            clearTimeout(upstreamHandshakeTimeoutId);
+            upstreamHandshakeTimeoutId = null;
+          }
+          upstreamReady = true;
+          maybeForwardPendingConnect();
+        });
+      }
 
       upstreamWs.on("message", (upRaw) => {
         const upParsed = safeJsonParse(String(upRaw ?? ""));
@@ -521,6 +596,7 @@ function createGatewayProxy(options) {
       }
 
       if (!upstreamReady || upstreamWs.readyState !== WebSocket.OPEN) {
+        log(`[gateway-proxy] connect rejected: upstreamReady=${upstreamReady} readyState=${upstreamWs?.readyState}`);
         closeBoth(1013, "upstream not ready");
         return;
       }

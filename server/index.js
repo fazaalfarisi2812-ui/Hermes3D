@@ -39,9 +39,9 @@ const loadRuntimeEnv = () => {
 loadRuntimeEnv();
 
 const resolvePort = () => {
-  const raw = process.env.PORT?.trim() || "3000";
+  const raw = process.env.PORT?.trim() || "3001";
   const port = Number(raw);
-  if (!Number.isFinite(port) || port <= 0) return 3000;
+  if (!Number.isFinite(port) || port <= 0) return 3001;
   return port;
 };
 
@@ -120,7 +120,7 @@ async function main() {
   const proxy = createGatewayProxy({
     loadUpstreamSettings: async () => {
       const settings = loadUpstreamGatewaySettings(process.env);
-      return { url: settings.url, token: settings.token, adapterType: settings.adapterType };
+      return { url: settings.url, token: settings.token, adapterType: settings.adapterType || "hermes-agent" };
     },
     log: (message) => console.info(message),
     logError: (message, error) => console.error(message, error),

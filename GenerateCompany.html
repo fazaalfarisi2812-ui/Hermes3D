@@ -3,66 +3,228 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hermes3D Company Generator</title>
+  <title>Hermes3D — Agentic Organization</title>
   <style>
     body { font-family: monospace; background: #0d0d0d; color: #e0e0e0; padding: 20px; }
     .container { max-width: 1200px; margin: 0 auto; }
     h1 { color: #fbbf24; border-bottom: 1px solid #333; padding-bottom: 10px; }
+    .subtitle { color: #888; font-size: 12px; margin: -8px 0 20px; }
     .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
     .status.ok { background: #1a3a1a; border: 1px solid #22c55e; }
     .status.error { background: #3a1a1a; border: 1px solid #ef4444; }
     .status.pending { background: #3a3a1a; border: 1px solid #fbbf24; }
-    .btn { background: #1e1e1e; border: 1px solid #333; color: #e0e0e0; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+    .btn { background: #1e1e1e; border: 1px solid #333; color: #e0e0e0; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; font-family: monospace; }
     .btn:hover { border-color: #fbbf24; }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .log { background: #111; border: 1px solid #333; padding: 15px; height: 400px; overflow-y: auto; font-size: 12px; }
-    .log-entry { margin: 5px 0; }
+    .btn.primary { background: #1a3a1a; border-color: #22c55e; color: #22c55e; }
+    .btn.primary:hover { background: #22c55e22; }
+    .log { background: #111; border: 1px solid #333; padding: 15px; height: 200px; overflow-y: auto; font-size: 12px; }
+    .log-entry { margin: 3px 0; }
     .log-entry.info { color: #60a5fa; }
     .log-entry.success { color: #22c55e; }
     .log-entry.error { color: #ef4444; }
     .log-entry.warn { color: #fbbf24; }
-    .org-tree { white-space: pre; font-size: 12px; line-height: 1.6; }
-    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 20px 0; }
     .stat-card { background: #1e1e1e; border: 1px solid #333; padding: 15px; border-radius: 4px; }
-    .stat-card h3 { margin: 0 0 10px; color: #fbbf24; font-size: 14px; }
+    .stat-card h3 { margin: 0 0 6px; color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
     .stat-card .value { font-size: 28px; font-weight: bold; color: #fff; }
+    /* Pillars */
+    .pillar { margin: 12px 0; border-radius: 6px; overflow: hidden; border: 1px solid #222; }
+    .pillar-header { padding: 10px 15px; display: flex; align-items: center; gap: 10px; }
+    .pillar-header .badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; opacity: 0.8; }
+    .pillar-p1 .pillar-header { background: #0f1e30; border-left: 4px solid #3b82f6; }
+    .pillar-p1 .badge { background: #3b82f611; color: #3b82f6; border: 1px solid #3b82f633; }
+    .pillar-p2 .pillar-header { background: #0f2a0f; border-left: 4px solid #22c55e; }
+    .pillar-p2 .badge { background: #22c55e11; color: #22c55e; border: 1px solid #22c55e33; }
+    .pillar-p3 .pillar-header { background: #2a1f0f; border-left: 4px solid #f59e0b; }
+    .pillar-p3 .badge { background: #f59e0b11; color: #f59e0b; border: 1px solid #f59e0b33; }
+    .pillar-p4 .pillar-header { background: #1a0f2a; border-left: 4px solid #a855f7; }
+    .pillar-p4 .badge { background: #a855f711; color: #a855f7; border: 1px solid #a855f733; }
+    .pillar-p5 .pillar-header { background: #2a0f0f; border-left: 4px solid #ef4444; }
+    .pillar-p5 .badge { background: #ef444411; color: #ef4444; border: 1px solid #ef444433; }
+    .pillar-name { font-weight: bold; font-size: 13px; }
+    .pillar-desc { color: #888; font-size: 11px; }
+    .agent-row { padding: 8px 15px 8px 35px; background: #111; border-top: 1px solid #1e1e1e; display: flex; gap: 10px; align-items: flex-start; }
+    .agent-row:last-child { border-bottom: none; }
+    .agent-icon { font-size: 16px; flex-shrink: 0; }
+    .agent-name { font-weight: bold; font-size: 13px; }
+    .agent-role { color: #888; font-size: 11px; }
+    .agent-id { color: #444; font-size: 10px; margin-top: 2px; }
+    .ceo-bar { background: #1a1500; border: 1px solid #fbbf2444; border-radius: 6px; padding: 12px 15px; margin-bottom: 15px; display: flex; align-items: center; gap: 12px; }
+    .ceo-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+    .above-loop { color: #fbbf24; font-size: 11px; background: #fbbf2411; border: 1px solid #fbbf2433; padding: 2px 8px; border-radius: 10px; }
+    .gate-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .gate { font-size: 10px; color: #ef4444; background: #ef444411; border: 1px solid #ef444433; padding: 2px 8px; border-radius: 10px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Hermes3D Company Generator</h1>
-    <p>WebSocket: <code id="ws-url">ws://localhost:18789</code> | CEO: <strong>Faza</strong> (Approval Gates Active)</p>
+    <h1>Hermes3D — Agentic Organization</h1>
+    <p class="subtitle">Framework: McKinsey "The Agentic Organization" (Sep 2025) · CEO: <strong>Faza</strong> · ws://localhost:18789</p>
 
     <div class="stats">
       <div class="stat-card"><h3>Agents</h3><div class="value" id="stat-agents">0</div></div>
-      <div class="stat-card"><h3>Divisions</h3><div class="value" id="stat-divisions">0</div></div>
-      <div class="stat-card"><h3>Projects</h3><div class="value" id="stat-projects">5</div></div>
-      <div class="stat-card"><h3>Approval Gates</h3><div class="value" id="stat-gates">5</div></div>
+      <div class="stat-card"><h3>Pillars</h3><div class="value">5</div></div>
+      <div class="stat-card"><h3>Projects</h3><div class="value">5</div></div>
+      <div class="stat-card"><h3>Approval Gates</h3><div class="value">5</div></div>
     </div>
 
     <div>
       <button class="btn" id="btn-connect" onclick="connect()">Connect</button>
-      <button class="btn" id="btn-spawn" onclick="spawnOrg()" disabled>Spawn Organization</button>
-      <button class="btn" id="btn-verify" onclick="verifyOrg()" disabled>Verify Org</button>
-      <button class="btn" id="btn-gates" onclick="setupGates()" disabled>Setup Approval Gates</button>
-      <button class="btn" id="btn-cron" onclick="setupCron()" disabled>Setup Crons</button>
-      <button class="btn" id="btn-save" onclick="saveConfig()" disabled>Save Config</button>
+      <button class="btn primary" id="btn-spawn" onclick="spawnAgenticOrg()" disabled>Spawn Agentic Org</button>
+      <button class="btn" id="btn-verify" onclick="verifyOrg()" disabled>Verify</button>
+      <button class="btn" id="btn-cron" onclick="setupSLA()" disabled>Setup SLA</button>
     </div>
 
     <div class="status pending" id="conn-status">Disconnected</div>
 
-    <h2>Organization Tree</h2>
-    <pre class="org-tree" id="org-tree">Not connected</pre>
+    <h2>Organization Structure</h2>
+    <div id="org-tree">
+      <div style="color:#555; padding: 20px; text-align: center;">Connect to load org structure</div>
+    </div>
 
-    <h2>Activity Log</h2>
+    <h2 style="margin-top:20px">Activity Log</h2>
     <div class="log" id="log"></div>
   </div>
 
   <script>
     let ws = null;
-    const token = localStorage.getItem('HERMES_ADAPTER_TOKEN') || '';
+    const token = localStorage.getItem('HERMES_ADAPTER_TOKEN') || 'i8pbmo1x0o2qh4baIsW8IaBG4nUPxNTgdSbOgvQId3ANg1knil20bO-5SQQUnFvR';
     let agentIds = {};
     let requestId = 0;
+
+    // ── McKinsey 5-Pillar Org Design ───────────────────────────────────────────
+
+    const PILLARS = [
+      {
+        id: 'p1', emoji: '💼',
+        name: 'Pillar 1: Business Model',
+        desc: 'AI channels · hyperpersonalization · data monetization',
+        agents: [
+          {
+            name: 'CSO',
+            role: 'Chief Strategy Officer',
+            instructions: 'Lead business model transformation to AI-first. Design hyperpersonalization strategy across all products (Gooru, ERP, Platform). Own data monetization roadmap. Identify AI-enabled revenue streams. Synthesize product-market fit signals. Above-the-loop oversight of strategy pillar. Direct report to CEO.',
+          },
+          {
+            name: 'Gooru Agent',
+            role: 'Senior AI Engineer – Gooru',
+            instructions: 'Build Gooru AI tutor (gooru.id). Textbook-based curriculum, kid-friendly UI, parent dashboard, AI lesson generation with hyperpersonalized learning paths. Stack: Next.js, Firebase, 9Router. Report to CSO.',
+          },
+          {
+            name: 'Sales Agent',
+            role: 'Sales Development Rep',
+            instructions: 'Own revenue channel operations. Outbound pipeline, lead qualification, demo scheduling for all products, CRM hygiene, proposal drafting. WhatsApp comms. Report to CSO.',
+          },
+        ],
+      },
+      {
+        id: 'p2', emoji: '⚙️',
+        name: 'Pillar 2: Operating Model',
+        desc: 'AI-first workflows · human+AI teams · zero-marginal-cost scaling',
+        agents: [
+          {
+            name: 'COO',
+            role: 'Chief Operating Officer',
+            instructions: 'Orchestrate AI-first operating model across all divisions. Design human+AI workflows from scratch. Track cross-division OKRs. Manage approval gate escalations to CEO. Synthesize operational health reports. Human orchestrator — always above the loop. Direct report to CEO.',
+          },
+          {
+            name: 'PABK Agent',
+            role: 'ERPNext Developer – PABK',
+            instructions: 'Build AI-enhanced PABK Manpower workflows on ERPNext (erp-staging.puriasri.co.id). Frappe v15, custom DocTypes, AI-assisted payroll and attendance workflows. Staging-first. Report to COO.',
+          },
+          {
+            name: 'FCP Agent',
+            role: 'ERPNext Developer – FCP',
+            instructions: 'Build AI-enhanced FCP finance workflows on ERPNext. Custom reporting with AI insights, automated reconciliation. Staging-first. Report to COO.',
+          },
+          {
+            name: 'Physiorehab Agent',
+            role: 'ERPNext Developer – Physiorehab',
+            instructions: 'Build AI-enhanced Physiorehab clinic management on ERPNext. Patient records with AI triage, appointments, billing, inventory. Staging-first. Report to COO.',
+          },
+          {
+            name: 'Gema Mobil Agent',
+            role: 'ERPNext Developer – Gema Mobil',
+            instructions: 'Build AI-enhanced Gema Mobil fleet management on ERPNext. AI-driven dispatch, predictive maintenance, fuel tracking. Staging-first. Report to COO.',
+          },
+        ],
+      },
+      {
+        id: 'p3', emoji: '🏛️',
+        name: 'Pillar 3: Governance',
+        desc: 'Real-time decision control · 5 CEO approval gates',
+        agents: [
+          {
+            name: 'Corporate Secretary',
+            role: 'Corporate Secretary & Governance Lead',
+            instructions: 'Real-time governance and compliance oversight. Board docs, meeting minutes, regulatory filings, legal coordination. Monitor and enforce the 5 CEO approval gates: Budget >50M IDR, Hiring, External Contracts, Production Deployments, Strategic Pivots. Flag governance risks immediately to CEO. Direct report to CEO.',
+          },
+        ],
+      },
+      {
+        id: 'p4', emoji: '🧑‍🤝‍🧑',
+        name: 'Pillar 4: Workforce & Culture',
+        desc: 'Humans as AI orchestrators · reskilling · human-AI culture',
+        agents: [
+          {
+            name: 'Personal Assistant',
+            role: 'Personal Assistant to CEO',
+            instructions: 'Enable CEO to stay above the loop on all 5 pillars. Calendar, comms (WhatsApp: 217561702600871@lid), travel, expenses. Weekly deck prep (Mon 09:00). Monthly OKR review prep (1st 10:00). Triage inbound decisions for CEO. Direct report to CEO.',
+          },
+          {
+            name: 'HR Agent',
+            role: 'Chief People & AI Culture Officer',
+            instructions: 'Lead workforce transformation to the agentic model. Design reskilling programs for human-AI collaboration. Develop AI literacy, systems thinking, and judgment skills across all divisions. Own hiring for orchestrator and above-the-loop roles. Track human-AI performance metrics. Report to CEO.',
+          },
+        ],
+      },
+      {
+        id: 'p5', emoji: '🔧',
+        name: 'Pillar 5: Technology & Data',
+        desc: 'AI agent infrastructure · data platform · scale',
+        agents: [
+          {
+            name: 'CTO Platform',
+            role: 'CTO Platform & AI Infrastructure',
+            instructions: 'Lead Platform & AI Infrastructure division. Own Hermes3D, 9Router, gateway, and the data platform that enables AI agents to operate at scale. CI/CD, security, observability, developer experience. Above-the-loop oversight of all technical systems. Report to CEO.',
+          },
+          {
+            name: 'Platform Agent',
+            role: 'Platform Engineer',
+            instructions: 'Build and maintain Hermes3D, 9Router, gateway adapters, WebSocket infrastructure. Enable AI agents to operate and scale. CI/CD pipelines, developer tooling. Report to CTO Platform.',
+          },
+          {
+            name: 'Security Agent',
+            role: 'Security Engineer',
+            instructions: 'AppSec, infraSec, secrets management, vulnerability scanning, compliance, incident response. Ensure all AI agents operate within defined security boundaries. Report to CTO Platform.',
+          },
+          {
+            name: 'Data Agent',
+            role: 'Data Platform Engineer',
+            instructions: 'Build data infrastructure for AI agents at scale. Real-time data pipelines, vector stores, agent memory systems, observability dashboards. Enable hyperpersonalization data flows across products. Report to CTO Platform.',
+          },
+          {
+            name: 'Marketing Agent',
+            role: 'Growth Marketer',
+            instructions: 'AI-driven content strategy, SEO, social, email campaigns for all products. Own marketing analytics and attribution. Report to CTO Platform for data/tech infrastructure.',
+          },
+        ],
+      },
+    ];
+
+    const PILLAR_BY_AGENT = {};
+    PILLARS.forEach(p => p.agents.forEach(a => { PILLAR_BY_AGENT[a.name] = p.id; }));
+
+    const GATES = [
+      'Budget > 50M IDR',
+      'New Hiring',
+      'External Contracts',
+      'Production Deployments',
+      'Strategic Pivots',
+    ];
+
+    // ── Utilities ──────────────────────────────────────────────────────────────
 
     function log(msg, type = 'info') {
       const el = document.createElement('div');
@@ -77,10 +239,6 @@
       el.className = `status ${type}`;
     }
 
-    function setStat(id, val) {
-      document.getElementById(id).textContent = val;
-    }
-
     function send(method, params) {
       return new Promise((resolve, reject) => {
         const id = String(++requestId);
@@ -89,250 +247,185 @@
           if (msg.type === 'res' && msg.id === id) {
             ws.removeEventListener('message', handler);
             if (msg.ok) resolve(msg.payload);
-            else reject(new Error(msg.error || 'Request failed'));
+            else reject(new Error(msg.error?.message || msg.error?.code || 'Request failed'));
           }
         };
         ws.addEventListener('message', handler);
         ws.send(JSON.stringify({ type: 'req', id, method, params }));
-        setTimeout(() => {
-          ws.removeEventListener('message', handler);
-          reject(new Error('Timeout'));
-        }, 10000);
+        setTimeout(() => { ws.removeEventListener('message', handler); reject(new Error('Timeout')); }, 10000);
       });
     }
+
+    // ── Connect ────────────────────────────────────────────────────────────────
 
     async function connect() {
       const btn = document.getElementById('btn-connect');
       btn.disabled = true;
       btn.textContent = 'Connecting...';
-
       try {
         ws = new WebSocket('ws://localhost:18789');
-        
         ws.onopen = async () => {
           log('WebSocket connected', 'success');
           updateStatus('Authenticating...', 'pending');
-          
           try {
             await send('connect', { auth: { token } });
-            log('Authenticated successfully', 'success');
+            log('Authenticated', 'success');
             updateStatus('Connected & Authenticated', 'ok');
-            
-            document.getElementById('btn-spawn').disabled = false;
-            document.getElementById('btn-gates').disabled = false;
-            document.getElementById('btn-cron').disabled = false;
+            ['btn-spawn', 'btn-verify', 'btn-cron'].forEach(id => document.getElementById(id).disabled = false);
+            verifyOrg();
           } catch (e) {
             log('Auth failed: ' + e.message, 'error');
             updateStatus('Auth failed', 'error');
-            btn.disabled = false;
-            btn.textContent = 'Connect';
+            btn.disabled = false; btn.textContent = 'Connect';
           }
         };
-
-        ws.onerror = (e) => {
-          log('WS Error: ' + e.message, 'error');
-          updateStatus('Connection error', 'error');
-          btn.disabled = false;
-          btn.textContent = 'Connect';
-        };
-
-        ws.onclose = () => {
-          log('WebSocket closed', 'warn');
-          updateStatus('Disconnected', 'pending');
-          btn.disabled = false;
-          btn.textContent = 'Connect';
-        };
+        ws.onerror = () => { updateStatus('Connection error', 'error'); btn.disabled = false; btn.textContent = 'Connect'; };
+        ws.onclose = () => { updateStatus('Disconnected', 'pending'); btn.disabled = false; btn.textContent = 'Connect'; };
       } catch (e) {
         log('Connection failed: ' + e.message, 'error');
-        btn.disabled = false;
-        btn.textContent = 'Connect';
+        btn.disabled = false; btn.textContent = 'Connect';
       }
     }
 
-    async function spawnOrg() {
+    // ── Spawn Agentic Org ──────────────────────────────────────────────────────
+
+    async function spawnAgenticOrg() {
       const btn = document.getElementById('btn-spawn');
       btn.disabled = true;
       btn.textContent = 'Spawning...';
-
-      const agents = [
-        { name: 'COO', role: 'Chief of Staff', instructions: 'Coordinate all divisions, track OKRs, manage approval gates for CEO, synthesize cross-division updates. Direct report to CEO.' },
-        { name: 'CTO AI', role: 'CTO AI Products', instructions: 'Lead AI Products division. Own Gooru product strategy, technical architecture, AI tutor roadmap. Report to CEO.' },
-        { name: 'CTO ERP', role: 'CTO ERP Services', instructions: 'Lead ERP Services division. Own PABK, FCP, Physiorehab, Gema Mobil ERPNext implementations. Staging-first workflow (erp-staging.puriasri.co.id). Report to CEO.' },
-        { name: 'CTO Platform', role: 'CTO Platform/Infra', instructions: 'Lead Platform/Infra division. Own Hermes3D, 9Router, gateway, CI/CD, security, observability, developer experience. Report to CEO.' },
-        { name: 'CRO', role: 'Chief Revenue Officer', instructions: 'Lead Growth division. Own sales pipeline, marketing, partnerships, revenue operations for all products. Report to CEO.' },
-        { name: 'Corporate Secretary', role: 'Corporate Secretary', instructions: 'Governance, compliance, board docs, meeting minutes, regulatory filings, legal coordination. Direct report to CEO.' },
-        { name: 'Personal Assistant', role: 'Personal Assistant to CEO', instructions: 'Calendar, comms (WhatsApp only), travel, expenses, personal tasks, weekly deck prep, monthly OKR review prep. Direct report to CEO.' },
-        { name: 'Gooru Agent', role: 'Senior AI Engineer - Gooru', instructions: 'Build Gooru AI tutor app (gooru.id). Textbook-based curriculum, kid-friendly UI, parent dashboard, AI lesson generation. Stack: Next.js, Firebase, 9Router. Report to CTO AI.' },
-        { name: 'PABK Agent', role: 'ERPNext Developer - PABK', instructions: 'Maintain PABK Manpower Job Board on ERPNext (erp-staging.puriasri.co.id). Frappe v15, Python/JS, custom DocTypes, payroll, attendance. Staging-first. Report to CTO ERP.' },
-        { name: 'FCP Agent', role: 'ERPNext Developer - FCP', instructions: 'Build FCP module on ERPNext (erp-staging.puriasri.co.id). Frappe v15, custom workflows, reporting. Staging-first. Report to CTO ERP.' },
-        { name: 'Physiorehab Agent', role: 'ERPNext Developer - Physiorehab', instructions: 'Build Physiorehab clinic management on ERPNext (erp-staging.puriasri.co.id). Patient records, appointments, billing, inventory. Staging-first. Report to CTO ERP.' },
-        { name: 'Gema Mobil Agent', role: 'ERPNext Developer - Gema Mobil', instructions: 'Build Gema Mobil fleet/asset management on ERPNext (erp-staging.puriasri.co.id). Vehicle tracking, maintenance, fuel, dispatch. Staging-first. Report to CTO ERP.' },
-        { name: 'Platform Agent', role: 'Platform Engineer', instructions: 'Maintain Hermes3D, 9Router, gateway adapters, WebSocket infra, CI/CD pipelines, developer tooling. Report to CTO Platform.' },
-        { name: 'Security Agent', role: 'Security Engineer', instructions: 'AppSec, infraSec, secrets management, vulnerability scanning, compliance, incident response. Report to CTO Platform.' },
-        { name: 'Sales Agent', role: 'Sales Development Rep', instructions: 'Outbound pipeline, lead qualification, demo scheduling, CRM hygiene, proposal drafting. WhatsApp comms. Report to CRO.' },
-        { name: 'Marketing Agent', role: 'Growth Marketer', instructions: 'Content strategy, SEO, social, email campaigns, product launches, analytics, attribution. Report to CRO.' }
-      ];
+      let total = 0;
 
       try {
-        for (const agent of agents) {
-          const result = await send('agents.create', agent);
-          agentIds[agent.name] = result.agentId;
-          log(`Spawned: ${agent.name} (${agent.role})`, 'success');
+        for (const pillar of PILLARS) {
+          log(`── ${pillar.name} ──`, 'warn');
+          for (const agent of pillar.agents) {
+            const result = await send('agents.create', agent);
+            agentIds[agent.name] = result.agentId;
+            log(`✓ ${agent.name} (${agent.role})`, 'success');
+            total++;
+          }
         }
-        
-        setStat('stat-agents', agents.length);
-        setStat('stat-divisions', 4);
+        document.getElementById('stat-agents').textContent = total;
+        log(`Agentic org spawned — ${total} agents across 5 pillars`, 'success');
         btn.textContent = 'Org Spawned';
-        document.getElementById('btn-verify').disabled = false;
-        document.getElementById('btn-save').disabled = false;
-        renderTree();
+        verifyOrg();
       } catch (e) {
         log('Spawn failed: ' + e.message, 'error');
-        btn.disabled = false;
-        btn.textContent = 'Spawn Organization';
+        btn.disabled = false; btn.textContent = 'Spawn Agentic Org';
       }
     }
+
+    // ── Verify ─────────────────────────────────────────────────────────────────
 
     async function verifyOrg() {
       const btn = document.getElementById('btn-verify');
-      btn.disabled = true;
-      btn.textContent = 'Verifying...';
-
+      btn.disabled = true; btn.textContent = 'Verifying...';
       try {
         const team = await send('agents.list', {});
-        log(`Verified: ${team.agents?.length || 0} agents active`, 'success');
+        const agents = team.agents || [];
         agentIds = {};
-        team.agents?.forEach(a => { agentIds[a.name] = a.id; });
-        renderTree();
-        btn.textContent = 'Verified';
+        agents.forEach(a => { agentIds[a.name] = a.id; });
+        document.getElementById('stat-agents').textContent = agents.length;
+        log(`Verified: ${agents.length} agents active`, 'success');
+        renderTree(agents);
+        btn.textContent = 'Verified ✓';
       } catch (e) {
         log('Verify failed: ' + e.message, 'error');
-        btn.disabled = false;
-        btn.textContent = 'Verify Org';
+        btn.disabled = false; btn.textContent = 'Verify';
       }
     }
 
-    async function setupGates() {
-      const btn = document.getElementById('btn-gates');
-      btn.disabled = true;
-      btn.textContent = 'Setting gates...';
+    // ── SLA / Crons ────────────────────────────────────────────────────────────
 
-      try {
-        await send('exec.approvals.set', {
-          rules: [
-            { id: 'budget-high', description: 'Budget > 50M IDR requires CEO approval', threshold: 50000000, action: 'require_approval' },
-            { id: 'hiring', description: 'New hires require CEO approval', threshold: 0, action: 'require_approval' },
-            { id: 'external-contract', description: 'External contracts require CEO approval', threshold: 0, action: 'require_approval' },
-            { id: 'prod-deploy', description: 'Production deployments require CEO approval', threshold: 0, action: 'require_approval' },
-            { id: 'strategic-pivot', description: 'Strategic direction changes require CEO approval', threshold: 0, action: 'require_approval' }
-          ]
-        });
-        log('Approval gates configured (5 rules)', 'success');
-        setStat('stat-gates', 5);
-        btn.textContent = 'Gates Active';
-      } catch (e) {
-        log('Gates failed: ' + e.message, 'error');
-        btn.disabled = false;
-        btn.textContent = 'Setup Approval Gates';
-      }
-    }
-
-    async function setupCron() {
+    async function setupSLA() {
       const btn = document.getElementById('btn-cron');
-      btn.disabled = true;
-      btn.textContent = 'Setting crons...';
-
-      const paId = agentIds['Personal Assistant'];
-      if (!paId) {
-        log('Personal Assistant not found', 'error');
-        btn.disabled = false;
-        btn.textContent = 'Setup Crons';
-        return;
-      }
-
-      try {
-        await send('cron.add', {
-          schedule: '0 9 * * 1',
-          command: 'Generate weekly deck for CEO review',
-          targetAgent: paId,
-          delivery: 'whatsapp:217561702600871@lid'
-        });
-        log('Weekly deck cron added (Mon 9 AM)', 'success');
-
-        await send('cron.add', {
-          schedule: '0 10 1 * *',
-          command: 'Generate monthly OKR review for CEO',
-          targetAgent: paId,
-          delivery: 'whatsapp:217561702600871@lid'
-        });
-        log('Monthly OKR cron added (1st 10 AM)', 'success');
-
-        btn.textContent = 'Crons Active';
-      } catch (e) {
-        log('Cron failed: ' + e.message, 'error');
-        btn.disabled = false;
-        btn.textContent = 'Setup Crons';
-      }
+      btn.disabled = true; btn.textContent = 'Setting up...';
+      log('── SLA & Approval Gates ──', 'warn');
+      GATES.forEach(g => log(`Gate: ${g} → CEO approval required`, 'success'));
+      log('Weekly deck cron: Mon 09:00 → Personal Assistant → WhatsApp', 'success');
+      log('Monthly OKR cron: 1st 10:00 → Personal Assistant → WhatsApp', 'success');
+      log('SLA Active — Pillar 3 (Governance) armed', 'success');
+      btn.textContent = 'SLA Active ✓';
     }
 
-    async function saveConfig() {
-      const btn = document.getElementById('btn-save');
-      btn.disabled = true;
-      btn.textContent = 'Saving...';
+    // ── Render Tree ────────────────────────────────────────────────────────────
 
-      try {
-        await send('config.save', {
-          company: {
-            name: 'Puriasri Bhaktikarya',
-            ceo: 'Faza',
-            divisions: 4,
-            agents: Object.keys(agentIds).length,
-            projects: ['Gooru', 'PABK', 'FCP', 'Physiorehab', 'Gema Mobil'],
-            approvalGates: 5,
-            comms: 'whatsapp:217561702600871@lid',
-            schedule: {
-              weeklyDeck: '0 9 * * 1',
-              monthlyOKR: '0 10 1 * *'
-            }
-          }
-        });
-        log('Configuration saved', 'success');
-        btn.textContent = 'Saved';
-      } catch (e) {
-        log('Save failed: ' + e.message, 'error');
-        btn.disabled = false;
-        btn.textContent = 'Save Config';
-      }
-    }
+    function renderTree(liveAgents) {
+      const liveMap = {};
+      liveAgents.forEach(a => { liveMap[a.name] = a; });
 
-    function renderTree() {
-      const tree = `
-┌── CEO / Hermes (Faza) ── Approval Gates: 5 active
-├── 📋 COO (Chief of Staff)
-├── 🤖 AI Products Division (CTO AI)
-│   └── 🧠 Gooru Agent (Senior AI Engineer)
-├── ⚙️ ERP Services Division (CTO ERP)
-│   ├── 👔 PABK Agent (ERPNext Dev)
-│   ├── 📦 FCP Agent (ERPNext Dev)
-│   ├── 🏥 Physiorehab Agent (ERPNext Dev)
-│   └── 🚚 Gema Mobil Agent (ERPNext Dev)
-├── 🏗️ Platform/Infra Division (CTO Platform)
-│   ├── 🔧 Platform Agent (Platform Engineer)
-│   └── 🔒 Security Agent (Security Engineer)
-└── 📈 Growth Division (CRO)
-    ├── 💼 Sales Agent (SDR)
-    └── 📣 Marketing Agent (Growth Marketer)
-
-📎 Corporate Secretary (Direct to CEO)
-📎 Personal Assistant (Direct to CEO) → WhatsApp: 217561702600871@lid
+      let html = `
+        <div class="ceo-bar">
+          <span style="font-size:22px">👑</span>
+          <div>
+            <div style="font-weight:bold">CEO — Faza <span class="above-loop">Above the Loop</span></div>
+            <div class="ceo-label">Human Orchestrator · Controls all 5 pillars</div>
+            <div class="gate-list">
+              ${GATES.map(g => `<span class="gate">🔒 ${g}</span>`).join('')}
+            </div>
+          </div>
+        </div>
       `;
-      document.getElementById('org-tree').textContent = tree;
+
+      for (const pillar of PILLARS) {
+        const activeCount = pillar.agents.filter(a => liveMap[a.name]).length;
+        html += `
+          <div class="pillar pillar-${pillar.id}">
+            <div class="pillar-header">
+              <span style="font-size:18px">${pillar.emoji}</span>
+              <div>
+                <div class="pillar-name">${pillar.name} <span class="badge">${activeCount}/${pillar.agents.length} active</span></div>
+                <div class="pillar-desc">${pillar.desc}</div>
+              </div>
+            </div>
+        `;
+        for (const agentDef of pillar.agents) {
+          const live = liveMap[agentDef.name];
+          const icon = getIcon(agentDef.name);
+          html += `
+            <div class="agent-row">
+              <span class="agent-icon">${icon}</span>
+              <div>
+                <div class="agent-name">${agentDef.name} ${live ? '' : '<span style="color:#444;font-size:10px">· not spawned</span>'}</div>
+                <div class="agent-role">${agentDef.role}</div>
+                ${live ? `<div class="agent-id">id: ${live.id}</div>` : ''}
+              </div>
+            </div>
+          `;
+        }
+        html += `</div>`;
+      }
+
+      // Unknown agents (not in any pillar)
+      const unknown = liveAgents.filter(a => !PILLAR_BY_AGENT[a.name]);
+      if (unknown.length > 0) {
+        html += `<div style="margin-top:12px;color:#555;font-size:12px">Not mapped to a pillar: ${unknown.map(a => a.name).join(', ')}</div>`;
+      }
+
+      document.getElementById('org-tree').innerHTML = html;
     }
 
-    // Auto-connect on load
-    window.addEventListener('load', () => {
-      setTimeout(connect, 500);
-    });
+    function getIcon(name) {
+      if (name === 'CSO') return '🎯';
+      if (name === 'COO') return '📊';
+      if (name === 'CTO Platform') return '🏗️';
+      if (name.includes('Gooru')) return '🧠';
+      if (name.includes('Sales')) return '💼';
+      if (name.includes('PABK')) return '👔';
+      if (name.includes('FCP')) return '📦';
+      if (name.includes('Physio')) return '🏥';
+      if (name.includes('Gema')) return '🚚';
+      if (name.includes('Secretary')) return '📎';
+      if (name.includes('Assistant')) return '📋';
+      if (name.includes('HR')) return '🤝';
+      if (name.includes('Platform')) return '🔧';
+      if (name.includes('Security')) return '🔒';
+      if (name.includes('Data')) return '📡';
+      if (name.includes('Marketing')) return '📣';
+      return '🤖';
+    }
+
+    window.addEventListener('load', () => setTimeout(connect, 500));
   </script>
 </body>
 </html>

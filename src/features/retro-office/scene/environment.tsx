@@ -4,12 +4,6 @@ import { memo, useMemo, type ReactNode } from "react";
 import {
   CANVAS_H,
   CANVAS_W,
-  EAST_WING_ROOM_HEIGHT,
-  EAST_WING_ROOM_TOP_Y,
-  GYM_ROOM_WIDTH,
-  GYM_ROOM_X,
-  QA_LAB_WIDTH,
-  QA_LAB_X,
   SCALE,
 } from "@/features/retro-office/core/constants";
 import {
@@ -20,7 +14,6 @@ import {
 } from "@/features/retro-office/core/district";
 import { toWorld } from "@/features/retro-office/core/geometry";
 import {
-  getCarpetTextures,
   getConcreteTextures,
   getGrassTextures,
   getPlasterTextures,
@@ -275,14 +268,6 @@ export const FloorAndWalls = memo(function FloorAndWalls({
     LOCAL_OFFICE_CANVAS_WIDTH / 2,
     LOCAL_OFFICE_CANVAS_HEIGHT / 2,
   );
-  const [gymZoneCenterX, , roomZoneCenterZ] = toWorld(
-    GYM_ROOM_X + GYM_ROOM_WIDTH / 2,
-    EAST_WING_ROOM_TOP_Y + EAST_WING_ROOM_HEIGHT / 2,
-  );
-  const [qaZoneCenterX] = toWorld(
-    QA_LAB_X + QA_LAB_WIDTH / 2,
-    EAST_WING_ROOM_TOP_Y + EAST_WING_ROOM_HEIGHT / 2,
-  );
   const [pathCenterX, , pathCenterZ] = toWorld(
     (CITY_PATH_ZONE.minX + CITY_PATH_ZONE.maxX) / 2,
     (CITY_PATH_ZONE.minY + CITY_PATH_ZONE.maxY) / 2,
@@ -291,15 +276,6 @@ export const FloorAndWalls = memo(function FloorAndWalls({
     (REMOTE_OFFICE_ZONE.minX + REMOTE_OFFICE_ZONE.maxX) / 2,
     (REMOTE_OFFICE_ZONE.minY + REMOTE_OFFICE_ZONE.maxY) / 2,
   );
-  const gymZoneWidth = Math.max(0, GYM_ROOM_WIDTH * SCALE);
-  const qaZoneWidth = Math.max(0, QA_LAB_WIDTH * SCALE);
-  const roomZoneHeight = EAST_WING_ROOM_HEIGHT * SCALE;
-  const roomFloorInset = 0.08;
-  const roomZoneFloorHeight = Math.max(0, roomZoneHeight - roomFloorInset * 2);
-  const gymZoneFloorWidth = Math.max(0, gymZoneWidth - roomFloorInset * 2);
-  const qaZoneFloorWidth = Math.max(0, qaZoneWidth - roomFloorInset * 2);
-  const qaZoneStripeHeight = roomZoneFloorHeight * 0.86;
-  const qaZoneStripeWidth = qaZoneFloorWidth * 0.92;
   const remoteOfficeOffsetZ = remoteOfficeCenterZ - localOfficeCenterZ;
   const localNorthWallZ = localOfficeCenterZ - localOfficeHeight / 2;
   const localSouthWallZ = localOfficeCenterZ + localOfficeHeight / 2;
@@ -316,7 +292,6 @@ export const FloorAndWalls = memo(function FloorAndWalls({
   );
   const pathGrass = useMemo(() => withRepeat(getGrassTextures(), 14, 2), []);
   const pathConcrete = useMemo(() => withRepeat(getConcreteTextures(), 8, 1), []);
-  const gymRubber = useMemo(() => withRepeat(getCarpetTextures(), 6, 4), []);
 
   return (
     <group>
@@ -437,7 +412,10 @@ export const FloorAndWalls = memo(function FloorAndWalls({
           </mesh>
 
           {Array.from({ length: 8 }).map((_, index) => {
-            const [wx, , wz] = toWorld(330 + index * 170, 820 + (index % 2 === 0 ? -44 : 44));
+            const [wx, , wz] = toWorld(
+              330 + index * 170,
+              CITY_PATH_ZONE.minY + 45 + (index % 2 === 0 ? -18 : 18),
+            );
             return (
               <mesh key={`garden-bed-${index}`} position={[wx, 0.03, wz]} castShadow receiveShadow>
                 <boxGeometry args={[0.58, 0.06, 0.18]} />
@@ -447,7 +425,10 @@ export const FloorAndWalls = memo(function FloorAndWalls({
           })}
 
           {Array.from({ length: 8 }).map((_, index) => {
-            const [wx, , wz] = toWorld(330 + index * 170, 820 + (index % 2 === 0 ? -44 : 44));
+            const [wx, , wz] = toWorld(
+              330 + index * 170,
+              CITY_PATH_ZONE.minY + 45 + (index % 2 === 0 ? -18 : 18),
+            );
             return (
               <PlanterFoliage
                 key={`garden-bed-top-${index}`}
@@ -458,7 +439,7 @@ export const FloorAndWalls = memo(function FloorAndWalls({
           })}
 
           {Array.from({ length: 6 }).map((_, index) => {
-            const [wx, , wz] = toWorld(420 + index * 190, 900);
+            const [wx, , wz] = toWorld(420 + index * 190, CITY_PATH_ZONE.minY + 112);
             return (
               <group key={`garden-light-${index}`} position={[wx, 0, wz]}>
                 <mesh position={[0, 0.2, 0]} castShadow>
@@ -474,7 +455,7 @@ export const FloorAndWalls = memo(function FloorAndWalls({
           })}
 
           {Array.from({ length: 8 }).map((_, index) => {
-            const [wx, , wz] = toWorld(220 + index * 190, 1005);
+            const [wx, , wz] = toWorld(220 + index * 190, CITY_PATH_ZONE.maxY - 18);
             return (
               <mesh
                 key={`city-light-${index}`}
@@ -489,7 +470,7 @@ export const FloorAndWalls = memo(function FloorAndWalls({
           })}
 
           {Array.from({ length: 4 }).map((_, index) => {
-            const [wx, , wz] = toWorld(250 + index * 430, 955);
+            const [wx, , wz] = toWorld(250 + index * 430, CITY_PATH_ZONE.maxY - 52);
             return (
               <mesh key={`city-planter-${index}`} position={[wx, 0.08, wz]} castShadow>
                 <boxGeometry args={[0.46, 0.14, 0.26]} />
@@ -499,187 +480,13 @@ export const FloorAndWalls = memo(function FloorAndWalls({
           })}
 
           {Array.from({ length: 4 }).map((_, index) => {
-            const [wx, , wz] = toWorld(250 + index * 430, 955);
+            const [wx, , wz] = toWorld(250 + index * 430, CITY_PATH_ZONE.maxY - 52);
             return (
               <PlanterFoliage
                 key={`city-planter-top-${index}`}
                 position={[wx, 0.19, wz]}
                 spread={0.85}
               />
-            );
-          })}
-        </>
-      ) : null}
-
-      {gymZoneFloorWidth > 0 && roomZoneFloorHeight > 0 ? (
-        <>
-          <mesh
-            position={[gymZoneCenterX, 0.002, roomZoneCenterZ]}
-            rotation={[-Math.PI / 2, 0, 0]}
-            receiveShadow
-          >
-            <planeGeometry args={[gymZoneFloorWidth, roomZoneFloorHeight]} />
-            <meshStandardMaterial
-              color="#40464f"
-              map={gymRubber.map}
-              roughnessMap={gymRubber.roughnessMap}
-              normalMap={gymRubber.normalMap}
-              normalScale={[0.5, 0.5]}
-              roughness={0.98}
-              metalness={0.02}
-            />
-          </mesh>
-          {showRemoteOffice ? (
-            <mesh
-              position={[gymZoneCenterX, 0.002, roomZoneCenterZ + remoteOfficeOffsetZ]}
-              rotation={[-Math.PI / 2, 0, 0]}
-              receiveShadow
-            >
-              <planeGeometry args={[gymZoneFloorWidth, roomZoneFloorHeight]} />
-              <meshStandardMaterial
-                color="#40464f"
-                map={gymRubber.map}
-                roughnessMap={gymRubber.roughnessMap}
-                normalMap={gymRubber.normalMap}
-                normalScale={[0.5, 0.5]}
-                roughness={0.98}
-                metalness={0.02}
-              />
-            </mesh>
-          ) : null}
-        </>
-      ) : null}
-
-      {qaZoneFloorWidth > 0 && roomZoneFloorHeight > 0 ? (
-        <>
-          <mesh
-            position={[qaZoneCenterX, 0.003, roomZoneCenterZ]}
-            rotation={[-Math.PI / 2, 0, 0]}
-            receiveShadow
-          >
-            <planeGeometry args={[qaZoneFloorWidth, roomZoneFloorHeight]} />
-            <meshStandardMaterial
-              color="#12091d"
-              roughness={0.92}
-              metalness={0.08}
-            />
-          </mesh>
-          {showRemoteOffice ? (
-            <mesh
-              position={[qaZoneCenterX, 0.003, roomZoneCenterZ + remoteOfficeOffsetZ]}
-              rotation={[-Math.PI / 2, 0, 0]}
-              receiveShadow
-            >
-              <planeGeometry args={[qaZoneFloorWidth, roomZoneFloorHeight]} />
-              <meshStandardMaterial
-                color="#12091d"
-                roughness={0.92}
-                metalness={0.08}
-              />
-            </mesh>
-          ) : null}
-          <mesh
-            position={[qaZoneCenterX, 0.004, roomZoneCenterZ]}
-            rotation={[-Math.PI / 2, 0, 0]}
-            receiveShadow
-          >
-            <planeGeometry args={[qaZoneFloorWidth * 0.96, roomZoneFloorHeight * 0.88]} />
-            <meshStandardMaterial
-              color="#170d28"
-              roughness={0.86}
-              metalness={0.12}
-            />
-          </mesh>
-          {showRemoteOffice ? (
-            <mesh
-              position={[qaZoneCenterX, 0.004, roomZoneCenterZ + remoteOfficeOffsetZ]}
-              rotation={[-Math.PI / 2, 0, 0]}
-              receiveShadow
-            >
-              <planeGeometry args={[qaZoneFloorWidth * 0.96, roomZoneFloorHeight * 0.88]} />
-              <meshStandardMaterial
-                color="#170d28"
-                roughness={0.86}
-                metalness={0.12}
-              />
-            </mesh>
-          ) : null}
-          {Array.from({ length: 7 }).map((_, index) => {
-            const offsetX =
-              qaZoneCenterX - qaZoneFloorWidth * 0.38 + index * (qaZoneFloorWidth / 7);
-            return (
-              <group key={`qa-vertical-group-${index}`}>
-                <mesh
-                  key={`qa-vertical-local-${index}`}
-                  position={[offsetX, 0.006, roomZoneCenterZ]}
-                  rotation={[-Math.PI / 2, 0, 0]}
-                >
-                  <planeGeometry args={[0.015, qaZoneStripeHeight]} />
-                  <meshStandardMaterial
-                    color="#0b0614"
-                    emissive="#7c3aed"
-                    emissiveIntensity={1.6}
-                    transparent
-                    opacity={0.34}
-                  />
-                </mesh>
-                {showRemoteOffice ? (
-                  <mesh
-                    key={`qa-vertical-remote-${index}`}
-                    position={[offsetX, 0.006, roomZoneCenterZ + remoteOfficeOffsetZ]}
-                    rotation={[-Math.PI / 2, 0, 0]}
-                  >
-                    <planeGeometry args={[0.015, qaZoneStripeHeight]} />
-                    <meshStandardMaterial
-                      color="#0b0614"
-                      emissive="#7c3aed"
-                      emissiveIntensity={1.6}
-                      transparent
-                      opacity={0.34}
-                    />
-                  </mesh>
-                ) : null}
-              </group>
-            );
-          })}
-          {Array.from({ length: 12 }).map((_, index) => {
-            const z =
-              roomZoneCenterZ -
-              qaZoneStripeHeight / 2 +
-              index * (qaZoneStripeHeight / 11);
-            return (
-              <group key={`qa-horizontal-group-${index}`}>
-                <mesh
-                  key={`qa-horizontal-local-${index}`}
-                  position={[qaZoneCenterX, 0.006, z]}
-                  rotation={[-Math.PI / 2, 0, 0]}
-                >
-                  <planeGeometry args={[qaZoneStripeWidth, 0.012]} />
-                  <meshStandardMaterial
-                    color="#04080d"
-                    emissive="#38bdf8"
-                    emissiveIntensity={1.6}
-                    transparent
-                    opacity={index % 3 === 0 ? 0.28 : 0.12}
-                  />
-                </mesh>
-                {showRemoteOffice ? (
-                  <mesh
-                    key={`qa-horizontal-remote-${index}`}
-                    position={[qaZoneCenterX, 0.006, z + remoteOfficeOffsetZ]}
-                    rotation={[-Math.PI / 2, 0, 0]}
-                  >
-                    <planeGeometry args={[qaZoneStripeWidth, 0.012]} />
-                    <meshStandardMaterial
-                      color="#04080d"
-                      emissive="#38bdf8"
-                      emissiveIntensity={1.6}
-                      transparent
-                      opacity={index % 3 === 0 ? 0.28 : 0.12}
-                    />
-                  </mesh>
-                ) : null}
-              </group>
             );
           })}
         </>

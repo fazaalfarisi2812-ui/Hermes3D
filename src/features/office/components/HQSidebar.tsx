@@ -1,6 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
+import Link from "next/link";
+import { Activity, BrainCircuit, ClipboardCheck, Database, Gauge, ListChecks, Network, ShieldCheck } from "lucide-react";
 
 export type HQSidebarTab =
   | "inbox"
@@ -18,6 +20,7 @@ type HQSidebarProps = {
   onOpenMarketplace: () => void;
   onAddAgent?: () => void;
   onOpenCompanyBuilder?: () => void;
+  onReorganizeDesks?: () => void;
   inboxPanel: ReactNode;
   historyPanel: ReactNode;
   kanbanPanel: ReactNode;
@@ -44,6 +47,7 @@ export function HQSidebar({
   onOpenMarketplace,
   onAddAgent,
   onOpenCompanyBuilder,
+  onReorganizeDesks,
   inboxPanel,
   historyPanel,
   kanbanPanel,
@@ -65,8 +69,72 @@ export function HQSidebar({
   const boardLikeWidth = activeTab === "kanban";
 
   return (
-    <aside className="pointer-events-none fixed inset-y-0 right-0 z-20 flex justify-end">
+    <aside className="pointer-events-none fixed inset-y-0 right-0 z-[130] flex justify-end">
       <div className="pointer-events-auto mt-14 flex shrink-0 flex-col items-end gap-1.5">
+        <Link
+          href="/organization"
+          title="Struktur organisasi"
+          aria-label="Struktur organisasi"
+          className="flex h-10 w-10 items-center justify-center rounded-l-md border border-r-0 border-emerald-500/30 bg-[#06090d]/90 text-emerald-300 hover:text-emerald-100"
+        >
+          <Network size={18} />
+        </Link>
+        <Link
+          href="/execution"
+          title="Execution Registry"
+          aria-label="Execution Registry"
+          className="flex h-10 w-10 items-center justify-center rounded-l-md border border-r-0 border-amber-500/30 bg-[#06090d]/90 text-amber-300 hover:text-amber-100"
+        >
+          <ListChecks size={18} />
+        </Link>
+        <Link
+          href="/capabilities"
+          title="Capabilities & Connectors"
+          aria-label="Capabilities & Connectors"
+          className="flex h-10 w-10 items-center justify-center rounded-l-md border border-r-0 border-cyan-500/30 bg-[#06090d]/90 text-cyan-300 hover:text-cyan-100"
+        >
+          <Database size={18} />
+        </Link>
+        <Link
+          href="/identities"
+          title="Agent Identity & Delegation"
+          aria-label="Agent Identity & Delegation"
+          className="flex h-10 w-10 items-center justify-center rounded-l-md border border-r-0 border-teal-500/30 bg-[#06090d]/90 text-teal-300 hover:text-teal-100"
+        >
+          <ShieldCheck size={18} />
+        </Link>
+        <Link
+          href="/operations"
+          title="Autonomous Operations"
+          aria-label="Autonomous Operations"
+          className="flex h-10 w-10 items-center justify-center rounded-l-md border border-r-0 border-violet-500/30 bg-[#06090d]/90 text-violet-300 hover:text-violet-100"
+        >
+          <Activity size={18} />
+        </Link>
+        <Link
+          href="/evaluations"
+          title="Evaluation & Learning"
+          aria-label="Evaluation & Learning"
+          className="flex h-10 w-10 items-center justify-center rounded-l-md border border-r-0 border-fuchsia-500/30 bg-[#06090d]/90 text-fuchsia-300 hover:text-fuchsia-100"
+        >
+          <BrainCircuit size={18} />
+        </Link>
+        <Link
+          href="/oversight"
+          title="Oversight Capacity"
+          aria-label="Oversight Capacity"
+          className="flex h-10 w-10 items-center justify-center rounded-l-md border border-r-0 border-orange-500/30 bg-[#06090d]/90 text-orange-300 hover:text-orange-100"
+        >
+          <Gauge size={18} />
+        </Link>
+        <Link
+          href="/readiness"
+          title="Production Readiness"
+          aria-label="Production Readiness"
+          className="flex h-10 w-10 items-center justify-center rounded-l-md border border-r-0 border-lime-500/30 bg-[#06090d]/90 text-lime-300 hover:text-lime-100"
+        >
+          <ClipboardCheck size={18} />
+        </Link>
         <button
           type="button"
           onClick={onToggle}
@@ -145,6 +213,15 @@ export function HQSidebar({
                 className="mt-2 rounded border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-200 transition-colors hover:border-emerald-400/40 hover:text-emerald-100"
               >
                 Build Company
+              </button>
+            ) : null}
+            {!railOnly && onReorganizeDesks ? (
+              <button
+                type="button"
+                onClick={onReorganizeDesks}
+                className="mt-2 rounded border border-violet-500/20 bg-violet-500/10 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-violet-200 transition-colors hover:border-violet-400/40 hover:text-violet-100"
+              >
+                Reorganize Office
               </button>
             ) : null}
             {railOnly ? (

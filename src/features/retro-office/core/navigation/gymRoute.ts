@@ -9,20 +9,20 @@ import {
 } from "@/features/retro-office/core/constants";
 
 export const GYM_DEFAULT_TARGET = {
-  x: GYM_ROOM_X + GYM_ROOM_WIDTH / 2,
-  y: 180,
+  x: 1330,
+  y: 330,
   facing: -Math.PI / 2,
 };
 
 const GYM_DOOR_OUTER_TARGET = {
-  x: GYM_ROOM_END_X + 40,
-  y: EAST_WING_DOOR_Y + 20,
+  x: 1330,
+  y: 450,
   facing: -Math.PI / 2,
 };
 
 const GYM_DOOR_INNER_TARGET = {
-  x: GYM_ROOM_END_X - 50,
-  y: EAST_WING_DOOR_Y + 20,
+  x: 1330,
+  y: 400,
   facing: -Math.PI / 2,
 };
 
@@ -35,9 +35,7 @@ export const resolveGymRoute = (
   workoutTarget: FacingPoint = GYM_DEFAULT_TARGET,
 ): GymRoute => {
   const insideGym =
-    (x >= GYM_ROOM_X && x <= GYM_ROOM_END_X &&
-      y >= EAST_WING_ROOM_TOP_Y &&
-      y <= EAST_WING_ROOM_TOP_Y + EAST_WING_ROOM_HEIGHT) ||
+    (x >= 1190 && x <= 1470 && y >= 240 && y <= 410) ||
     Math.hypot(
       x - GYM_DOOR_INNER_TARGET.x,
       y - GYM_DOOR_INNER_TARGET.y,

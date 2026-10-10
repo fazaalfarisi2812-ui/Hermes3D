@@ -5,6 +5,7 @@ export const OFFICE_INTERACTION_TARGETS = [
   "gym",
   "jukebox",
   "qa_lab",
+  "lounge",
   "sms_booth",
   "phone_booth",
   "conversation",

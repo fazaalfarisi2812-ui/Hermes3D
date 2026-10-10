@@ -9,20 +9,20 @@ import {
 } from "@/features/retro-office/core/constants";
 
 export const QA_LAB_DEFAULT_TARGET = {
-  x: QA_LAB_X + QA_LAB_WIDTH / 2,
-  y: 180,
+  x: 1330,
+  y: 750,
   facing: -Math.PI / 2,
 };
 
 const QA_LAB_DOOR_OUTER_TARGET = {
-  x: QA_LAB_X - 36,
-  y: EAST_WING_DOOR_Y + 20,
+  x: 1330,
+  y: 870,
   facing: -Math.PI / 2,
 };
 
 const QA_LAB_DOOR_INNER_TARGET = {
-  x: QA_LAB_X + 50,
-  y: EAST_WING_DOOR_Y + 20,
+  x: 1330,
+  y: 820,
   facing: -Math.PI / 2,
 };
 
@@ -35,9 +35,7 @@ export const resolveQaLabRoute = (
   stationTarget: FacingPoint = QA_LAB_DEFAULT_TARGET,
 ): QaLabRoute => {
   const insideLab =
-    (x >= QA_LAB_X && x <= QA_LAB_END_X &&
-      y >= EAST_WING_ROOM_TOP_Y &&
-      y <= EAST_WING_ROOM_TOP_Y + EAST_WING_ROOM_HEIGHT) ||
+    (x >= 1190 && x <= 1470 && y >= 660 && y <= 830) ||
     Math.hypot(
       x - QA_LAB_DOOR_INNER_TARGET.x,
       y - QA_LAB_DOOR_INNER_TARGET.y,

@@ -1,1 +1,17 @@
-* @iamlukethedev
+# Global owners
+* @faza0
+
+# Agent system - critical paths
+/src/features/agents/ @faza0
+/src/app/api/agents/ @faza0
+/server/mcp-server/ @faza0
+
+# Build & CI/CD
+/.github/workflows/ @faza0
+/package.json @faza0
+/tsconfig.json @faza0
+
+# Security configs
+/.gitleaks.toml @faza0
+/.github/dependabot.yml @faza0
+/.github/SECURITY.md @faza0

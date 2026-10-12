@@ -2,7 +2,3 @@
 description = "LocalStorage keys for office furniture persistence - not secrets"
 paths = ["src/features/retro-office/core/constants.ts"]
 regexes = ['"hermes-office-furniture-v[0-9]+"', '"hermes-office-furniture-v9"']
-
-# Note: The token in public/GenerateCompany.html is a REAL secret that must be rotated
-# It's a hardcoded authentication token for the company generator WebSocket connection
-# Action required: rotate this token and remove from source code

@@ -710,6 +710,7 @@ export const useGatewayConnection = (
     token: string;
     adapterType: StudioGatewayAdapterType;
     profiles?: Partial<Record<StudioGatewayAdapterType, { url: string; token: string }>>;
+    tokenConfiguredByAdapter?: Partial<Record<StudioGatewayAdapterType, boolean>>;
     hasLastKnownGood: boolean;
   } | null>(null);
   const retryAttemptRef = useRef(0);
@@ -734,6 +735,8 @@ export const useGatewayConnection = (
   const [connectErrorCode, setConnectErrorCode] = useState<string | null>(null);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [hasLastKnownGoodState, setHasLastKnownGoodState] = useState(false);
+  const [hasServerTokenForSelectedAdapter, setHasServerTokenForSelectedAdapter] =
+    useState(false);
   const lastScheduledGatewaySnapshotRef = useRef<string | null>(null);
   const setSelectedAdapterType = useCallback(
     (value: StudioGatewayAdapterType) => {
@@ -752,6 +755,9 @@ export const useGatewayConnection = (
           loaded?.profiles?.[value]?.url?.trim()
       );
       setHasLastKnownGoodState(nextHasLastKnownGood);
+      setHasServerTokenForSelectedAdapter(
+        Boolean(loaded?.tokenConfiguredByAdapter?.[value])
+      );
       setError(null);
       setConnectErrorCode(null);
     },
@@ -786,6 +792,38 @@ export const useGatewayConnection = (
           localDefaults: normalizedDefaults,
         });
         const nextAdapterType = resolvedGatewayProfiles.selectedAdapterType;
+        const gatewaySettingsPublic = gatewaySettings as {
+          adapterType?: StudioGatewayAdapterType;
+          tokenConfigured?: boolean;
+          profiles?: Partial<
+            Record<StudioGatewayAdapterType, { tokenConfigured?: boolean }>
+          >;
+        } | null;
+        const tokenConfiguredByAdapter: Partial<
+          Record<StudioGatewayAdapterType, boolean>
+        > = {};
+        for (const adapterType of [
+          "hermes",
+          "hermes-agent",
+          "demo",
+          "local",
+          "hermes3d",
+          "custom",
+        ] as const) {
+          const profileConfigured =
+            gatewaySettingsPublic?.profiles?.[adapterType]?.tokenConfigured;
+          if (typeof profileConfigured === "boolean") {
+            tokenConfiguredByAdapter[adapterType] = profileConfigured;
+          }
+        }
+        if (
+          gatewaySettingsPublic?.adapterType &&
+          typeof gatewaySettingsPublic.tokenConfigured === "boolean" &&
+          tokenConfiguredByAdapter[gatewaySettingsPublic.adapterType] === undefined
+        ) {
+          tokenConfiguredByAdapter[gatewaySettingsPublic.adapterType] =
+            gatewaySettingsPublic.tokenConfigured;
+        }
         const selectedProfile =
           resolvedGatewayProfiles.activeProfile ??
           resolveDefaultStudioGatewayProfile(nextAdapterType, normalizedDefaults);
@@ -804,6 +842,7 @@ export const useGatewayConnection = (
           token: nextToken,
           adapterType: nextAdapterType,
           profiles: resolvedGatewayProfiles.profiles,
+          tokenConfiguredByAdapter,
           hasLastKnownGood: hasPersistedProfileForSelected,
         };
         setGatewayUrl(nextGatewayUrl);
@@ -811,6 +850,9 @@ export const useGatewayConnection = (
         setSelectedAdapterTypeState(nextAdapterType);
         setAdapterProfiles(resolvedGatewayProfiles.profiles);
         setHasLastKnownGoodState(hasPersistedProfileForSelected);
+        setHasServerTokenForSelectedAdapter(
+          Boolean(tokenConfiguredByAdapter[nextAdapterType])
+        );
       } catch (err) {
         if (!cancelled) {
           const message = err instanceof Error ? err.message : "Failed to load gateway settings.";
@@ -824,6 +866,7 @@ export const useGatewayConnection = (
               token: "",
               adapterType: "hermes",
               profiles: undefined,
+              tokenConfiguredByAdapter: undefined,
               hasLastKnownGood: false,
             };
           }
@@ -1210,7 +1253,9 @@ export const useGatewayConnection = (
       selectedAdapterType === "hermes3d" ||
       !hasLastKnownGoodState ||
       !(gatewayUrl ?? "").trim() ||
-      (selectedAdapterType === "hermes" && !(token ?? "").trim()) ||
+      (selectedAdapterType === "hermes" &&
+        !(token ?? "").trim() &&
+        !hasServerTokenForSelectedAdapter) ||
       wasManualDisconnectRef.current ||
       Boolean(error));
 

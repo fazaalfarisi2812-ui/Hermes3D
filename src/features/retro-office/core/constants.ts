@@ -1,12 +1,13 @@
 export const DESK_STICKY_MS = 10_000;
 export const SNAP_GRID = 10;
-export const STORAGE_KEY = "hermes-office-furniture-v9";
+export const STORAGE_KEY = "hermes-office-furniture-v14";
 export const ATM_MIGRATION_KEY = "hermes-office-atm-migration-v1";
 export const SERVER_ROOM_MIGRATION_KEY =
   "hermes-office-server-room-migration-v3";
 export const GYM_ROOM_MIGRATION_KEY = "hermes-office-gym-room-migration-v3";
 export const QA_LAB_MIGRATION_KEY = "hermes-office-qa-lab-migration-v3";
-export const PHONE_BOOTH_MIGRATION_KEY = "hermes-office-phone-booth-migration-v1";
+export const PHONE_BOOTH_MIGRATION_KEY =
+  "hermes-office-phone-booth-migration-v1";
 export const SMS_BOOTH_MIGRATION_KEY = "hermes-office-sms-booth-migration-v1";
 export const ROTATION_STEP_DEG = 15;
 export const WALL_THICKNESS = 8;
@@ -23,7 +24,7 @@ export const BUMP_RECOVERY_MS = 1200;
 export const AGENT_RADIUS = 20;
 export const SEPARATION_STRENGTH = 3;
 export const CANVAS_W = 1800;
-export const CANVAS_H = 1800;
+export const CANVAS_H = 3400;
 export const EAST_WING_START_X = 1092;
 export const EAST_WING_SIDE_MARGIN = 34;
 export const EAST_WING_ROOM_TOP_Y = 40;

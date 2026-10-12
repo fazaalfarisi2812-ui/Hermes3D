@@ -1,0 +1,20 @@
+{
+  "name": "hermes-office-plugin",
+  "version": "1.0.0",
+  "description": "Hermes Desktop plugin for 2D office mode",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build && node scripts/build-plugin.mjs",
+    "watch": "node scripts/build-plugin.mjs --watch",
+    "preview": "vite preview"
+  },
+  "keywords": ["hermes", "plugin", "office", "2d"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vite": "^5.2.0",
+    "@types/node": "^20.12.0"
+  }
+}

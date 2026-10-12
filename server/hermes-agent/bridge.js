@@ -989,6 +989,7 @@ function createHermesAgentUpstream(options) {
     upstream.readyState = OPEN;
     log(`[hermes-agent] JSON-RPC gateway ready at ${redactUrl(client.url)}`);
     upstream.emit("open");
+    upstream.emit("ready");
   });
 
   client.on("close", (code, reason) => {

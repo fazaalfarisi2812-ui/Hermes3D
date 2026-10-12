@@ -1,0 +1,8 @@
+{
+  "name": "Hermes Office",
+  "description": "2D pixel office mode for agent collaboration",
+  "version": 1,
+  "code": "assets/plugin.js",
+  "icon": "assets/icon.png",
+  "permissions": ["agent:read", "agent:write", "office:read", "office:write", "chat:read", "chat:write"]
+}

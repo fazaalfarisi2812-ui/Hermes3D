@@ -259,6 +259,8 @@ Common environment variables:
 - `HERMES3D_GATEWAY_ADAPTER_TYPE` can pair with `HERMES3D_GATEWAY_URL` to mark those runtime defaults as `hermes`, `demo`, `local`, `hermes3d`, or `custom`.
 - If `HERMES3D_GATEWAY_URL` is not set, Studio can still surface local Hermes or demo adapter defaults from `HERMES_ADAPTER_PORT` / `DEMO_ADAPTER_PORT`.
 - `HERMES_API_URL` points the gateway adapter at the Hermes HTTP API. It defaults to `http://localhost:8642`.
+- `HERMES3D_HERMES_API_URL` takes precedence over `HERMES_API_URL` for the bundled adapter. Use it when a desktop runtime sets a system-wide `HERMES_API_URL` that points at a different service.
+- `HERMES_ADAPTER_TOKEN` optionally requires Studio to authenticate to the bundled local gateway adapter. `HERMES3D_ADAPTER_TOKEN` takes precedence when both are configured. Store the same value in the Hermes Studio profile; Studio keeps it server-side when using the same-origin proxy.
 - Hermes file defaults come from `~/.hermes/hermes.json` when present.
 - `HERMES_STATE_DIR` and `HERMES_CONFIG_PATH` override the default Hermes paths.
 - `HERMES_GATEWAY_SSH_TARGET`, `HERMES_GATEWAY_SSH_USER`, `HERMES_GATEWAY_SSH_PORT`, and `HERMES_GATEWAY_SSH_STRICT_HOST_KEY_CHECKING` support advanced gateway-host operations over SSH when needed.

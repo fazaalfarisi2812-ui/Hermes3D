@@ -1,0 +1,3 @@
+# False positives for repo security scanner
+# LocalStorage keys that look like secrets but aren't
+src/features/retro-office/core/constants.ts

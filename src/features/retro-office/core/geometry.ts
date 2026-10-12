@@ -84,6 +84,8 @@ export const ITEM_FOOTPRINT: Record<string, [number, number]> = {
   trash: [20, 20],
   mug: [14, 14],
   clock: [20, 20],
+  room_zone: [220, 140],
+  room_label: [220, 42],
 };
 
 export const getItemBaseSize = (item: FurnitureItem) => {
@@ -108,71 +110,76 @@ export const getItemBaseSize = (item: FurnitureItem) => {
  * This is the single source of truth for nav-blocking behaviour. `buildNavGrid` in
  * navigation.ts reads this instead of maintaining its own hardcoded type set.
  */
-export const ITEM_METADATA: Record<string, { blocksNavigation: boolean; navPadding?: number }> = {
+export const ITEM_METADATA: Record<
+  string,
+  { blocksNavigation: boolean; navPadding?: number }
+> = {
   // ── structural ────────────────────────────────────────────────────────────
-  wall:            { blocksNavigation: true  },
-  door:            { blocksNavigation: false }, // passable
+  wall: { blocksNavigation: true },
+  door: { blocksNavigation: false }, // passable
   // ── seating / lounge ──────────────────────────────────────────────────────
-  chair:           { blocksNavigation: false }, // passable / agents sit on them
-  couch:           { blocksNavigation: true  },
-  couch_v:         { blocksNavigation: true  },
-  beanbag:         { blocksNavigation: true  }, // large floor seat (issue #4)
+  chair: { blocksNavigation: false }, // passable / agents sit on them
+  couch: { blocksNavigation: true },
+  couch_v: { blocksNavigation: true },
+  beanbag: { blocksNavigation: true }, // large floor seat (issue #4)
   // ── desks / workstations ──────────────────────────────────────────────────
-  desk_cubicle:    { blocksNavigation: true, navPadding: 0 }, // blocks nav with zero padding (tight to desk body)
-  executive_desk:  { blocksNavigation: true  },
+  desk_cubicle: { blocksNavigation: true, navPadding: 0 }, // blocks nav with zero padding (tight to desk body)
+  executive_desk: { blocksNavigation: true },
   // ── tables ────────────────────────────────────────────────────────────────
-  round_table:     { blocksNavigation: true  },
-  table_rect:      { blocksNavigation: true  },
-  pingpong:        { blocksNavigation: true  },
+  round_table: { blocksNavigation: true },
+  table_rect: { blocksNavigation: true },
+  pingpong: { blocksNavigation: true },
   // ── storage / shelving ────────────────────────────────────────────────────
-  bookshelf:       { blocksNavigation: true  },
-  cabinet:         { blocksNavigation: true  },
-  wall_cabinet:    { blocksNavigation: false }, // wall-mounted; agents walk under
+  bookshelf: { blocksNavigation: true },
+  cabinet: { blocksNavigation: true },
+  wall_cabinet: { blocksNavigation: false }, // wall-mounted; agents walk under
   // ── kitchen appliances ────────────────────────────────────────────────────
-  fridge:          { blocksNavigation: true  },
-  stove:           { blocksNavigation: true  },
-  microwave:       { blocksNavigation: false }, // counter-top / elevated
-  dishwasher:      { blocksNavigation: true  }, // floor appliance (issue #4)
-  sink:            { blocksNavigation: true  },
-  coffee_machine:  { blocksNavigation: false }, // elevated on counter
+  fridge: { blocksNavigation: true },
+  stove: { blocksNavigation: true },
+  microwave: { blocksNavigation: false }, // counter-top / elevated
+  dishwasher: { blocksNavigation: true }, // floor appliance (issue #4)
+  sink: { blocksNavigation: true },
+  coffee_machine: { blocksNavigation: false }, // elevated on counter
   // ── office equipment ──────────────────────────────────────────────────────
-  printer:         { blocksNavigation: true  },
-  vending:         { blocksNavigation: true  },
-  atm:             { blocksNavigation: true  },
-  whiteboard:      { blocksNavigation: true  },
-  computer:        { blocksNavigation: false }, // desk item
-  keyboard:        { blocksNavigation: false }, // desk decoration
-  mouse:           { blocksNavigation: false }, // desk decoration
+  printer: { blocksNavigation: true },
+  vending: { blocksNavigation: true },
+  atm: { blocksNavigation: true },
+  whiteboard: { blocksNavigation: true },
+  computer: { blocksNavigation: false }, // desk item
+  keyboard: { blocksNavigation: false }, // desk decoration
+  mouse: { blocksNavigation: false }, // desk decoration
   // ── server room ───────────────────────────────────────────────────────────
-  server_rack:     { blocksNavigation: true  },
-  server_terminal: { blocksNavigation: true  }, // floor-standing terminal (issue #4)
-  sms_booth:       { blocksNavigation: true  },
-  phone_booth:     { blocksNavigation: true  },
+  server_rack: { blocksNavigation: true },
+  server_terminal: { blocksNavigation: true }, // floor-standing terminal (issue #4)
+  sms_booth: { blocksNavigation: true },
+  phone_booth: { blocksNavigation: true },
   // ── QA lab ────────────────────────────────────────────────────────────────
-  qa_terminal:     { blocksNavigation: true  },
-  kanban_board:    { blocksNavigation: true  },
-  device_rack:     { blocksNavigation: true  },
-  test_bench:      { blocksNavigation: true  },
+  qa_terminal: { blocksNavigation: true },
+  kanban_board: { blocksNavigation: true },
+  device_rack: { blocksNavigation: true },
+  test_bench: { blocksNavigation: true },
   // ── gym ───────────────────────────────────────────────────────────────────
-  treadmill:       { blocksNavigation: true  },
-  weight_bench:    { blocksNavigation: true  },
-  dumbbell_rack:   { blocksNavigation: true  },
-  exercise_bike:   { blocksNavigation: true  },
-  punching_bag:    { blocksNavigation: true  },
-  jukebox:         { blocksNavigation: true  },
-  rowing_machine:  { blocksNavigation: true  },
-  kettlebell_rack: { blocksNavigation: true  },
-  yoga_mat:        { blocksNavigation: true  },
+  treadmill: { blocksNavigation: true },
+  weight_bench: { blocksNavigation: true },
+  dumbbell_rack: { blocksNavigation: true },
+  exercise_bike: { blocksNavigation: true },
+  punching_bag: { blocksNavigation: true },
+  jukebox: { blocksNavigation: true },
+  rowing_machine: { blocksNavigation: true },
+  kettlebell_rack: { blocksNavigation: true },
+  yoga_mat: { blocksNavigation: true },
   // ── art room ──────────────────────────────────────────────────────────────
-  easel:           { blocksNavigation: true  }, // floor-standing prop (issue #4)
+  easel: { blocksNavigation: true }, // floor-standing prop (issue #4)
   // ── water cooler ──────────────────────────────────────────────────────────
-  water_cooler:    { blocksNavigation: true  }, // freestanding floor appliance (issue #4)
+  water_cooler: { blocksNavigation: true }, // freestanding floor appliance (issue #4)
   // ── decorative / small ────────────────────────────────────────────────────
-  plant:           { blocksNavigation: true  },
-  lamp:            { blocksNavigation: false }, // floor lamp but thin; passable in practice
-  trash:           { blocksNavigation: false }, // small bin
-  clock:           { blocksNavigation: false }, // wall-mounted
-  mug:             { blocksNavigation: false }, // desk item
+  plant: { blocksNavigation: true },
+  lamp: { blocksNavigation: false }, // floor lamp but thin; passable in practice
+  trash: { blocksNavigation: false }, // small bin
+  clock: { blocksNavigation: false }, // wall-mounted
+  mug: { blocksNavigation: false }, // desk item
+  room_zone: { blocksNavigation: false }, // visual floor overlay only
+  room_label: { blocksNavigation: false }, // floating section sign
 };
 
 export const FURNITURE_ROTATION: Record<string, number> = {

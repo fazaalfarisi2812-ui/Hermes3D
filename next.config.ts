@@ -64,6 +64,19 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
   },
+  
+  async rewrites() {
+    return [
+      {
+        source: "/hud/:path*",
+        destination: "http://localhost:8765/hud/:path*",
+      },
+      {
+        source: "/hud",
+        destination: "http://localhost:8765/hud/",
+      },
+    ];
+  },
   async headers() {
     return [
       {

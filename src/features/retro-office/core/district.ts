@@ -10,7 +10,9 @@ export type DistrictZone = {
 };
 
 export const LOCAL_OFFICE_CANVAS_WIDTH = 1800;
-export const LOCAL_OFFICE_CANVAS_HEIGHT = 720;
+// The office layout includes management, divisions, wellbeing facilities, and
+// active project rooms. Keep the complete local campus on one continuous floor.
+export const LOCAL_OFFICE_CANVAS_HEIGHT = 1500;
 
 export const LOCAL_OFFICE_ZONE: DistrictZone = {
   minX: 0,
@@ -22,25 +24,25 @@ export const LOCAL_OFFICE_ZONE: DistrictZone = {
 export const CITY_PATH_ZONE: DistrictZone = {
   minX: 0,
   maxX: LOCAL_OFFICE_CANVAS_WIDTH,
-  minY: 760,
-  maxY: 980,
+  minY: LOCAL_OFFICE_CANVAS_HEIGHT + 40,
+  maxY: LOCAL_OFFICE_CANVAS_HEIGHT + 220,
 };
 
 export const REMOTE_OFFICE_ZONE: DistrictZone = {
   minX: 0,
   maxX: LOCAL_OFFICE_CANVAS_WIDTH,
-  minY: 1020,
-  maxY: 1020 + LOCAL_OFFICE_CANVAS_HEIGHT,
+  minY: CITY_PATH_ZONE.maxY + 40,
+  maxY: CITY_PATH_ZONE.maxY + 40 + LOCAL_OFFICE_CANVAS_HEIGHT,
 };
 
 export const REMOTE_ROAM_POINTS = [
-  { x: 800, y: 1220 },
-  { x: 850, y: 1520 },
-  { x: 820, y: 1600 },
-  { x: 450, y: 1440 },
-  { x: 250, y: 1440 },
-  { x: 650, y: 1440 },
-  { x: 150, y: 1640 },
+  { x: 800, y: REMOTE_OFFICE_ZONE.minY + 200 },
+  { x: 850, y: REMOTE_OFFICE_ZONE.minY + 520 },
+  { x: 820, y: REMOTE_OFFICE_ZONE.minY + 920 },
+  { x: 450, y: REMOTE_OFFICE_ZONE.minY + 440 },
+  { x: 250, y: REMOTE_OFFICE_ZONE.minY + 820 },
+  { x: 650, y: REMOTE_OFFICE_ZONE.minY + 1120 },
+  { x: 150, y: REMOTE_OFFICE_ZONE.minY + 1320 },
 ] as const;
 
 export const DISTRICT_CAMERA_POSITION: [number, number, number] = [14, 16, 18];

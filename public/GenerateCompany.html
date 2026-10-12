@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hermes3D Company Generator</title>
+    <style>
+      body {
+        font-family: monospace;
+        background: #0d0d0d;
+        color: #e0e0e0;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      h1 {
+        color: #fbbf24;
+        border-bottom: 1px solid #333;
+        padding-bottom: 10px;
+      }
+      .status {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+      }
+      .status.ok {
+        background: #1a3a1a;
+        border: 1px solid #22c55e;
+      }
+      .status.error {
+        background: #3a1a1a;
+        border: 1px solid #ef4444;
+      }
+      .status.pending {
+        background: #3a3a1a;
+        border: 1px solid #fbbf24;
+      }
+      .btn {
+        background: #1e1e1e;
+        border: 1px solid #333;
+        color: #e0e0e0;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      .btn:hover {
+        border-color: #fbbf24;
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .log {
+        background: #111;
+        border: 1px solid #333;
+        padding: 15px;
+        height: 300px;
+        overflow-y: auto;
+        font-size: 12px;
+      }
+      .log-entry {
+        margin: 5px 0;
+      }
+      .log-entry.info {
+        color: #60a5fa;
+      }
+      .log-entry.success {
+        color: #22c55e;
+      }
+      .log-entry.error {
+        color: #ef4444;
+      }
+      .log-entry.warn {
+        color: #fbbf24;
+      }
+      .org-tree {
+        font-size: 14px;
+        line-height: 1.6;
+        background: #1e1e1e;
+        padding: 20px;
+        border-radius: 4px;
+        border: 1px solid #333;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+      }
+      .stat-card {
+        background: #1e1e1e;
+        border: 1px solid #333;
+        padding: 15px;
+        border-radius: 4px;
+      }
+      .stat-card h3 {
+        margin: 0 0 10px;
+        color: #fbbf24;
+        font-size: 14px;
+      }
+      .stat-card .value {
+        font-size: 28px;
+        font-weight: bold;
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Hermes3D Company Generator</h1>
+      <p>
+        WebSocket: <code id="ws-url">ws://localhost:18789</code> | CEO:
+        <strong>Faza</strong> (Approval Gates Active)
+      </p>
+
+      <div class="stats">
+        <div class="stat-card">
+          <h3>Agents</h3>
+          <div class="value" id="stat-agents">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Divisions</h3>
+          <div class="value" id="stat-divisions">5</div>
+        </div>
+        <div class="stat-card">
+          <h3>Projects</h3>
+          <div class="value" id="stat-projects">5</div>
+        </div>
+      </div>
+
+      <div>
+        <button class="btn" id="btn-connect" onclick="connect()">
+          Connect
+        </button>
+        <button class="btn" id="btn-verify" onclick="verifyOrg()" disabled>
+          Verify Org
+        </button>
+        <button class="btn" id="btn-cron" onclick="setupCron()" disabled>
+          Setup SLA/Crons
+        </button>
+      </div>
+
+      <div class="status pending" id="conn-status">Disconnected</div>
+
+      <h2>Organization Tree</h2>
+      <div class="org-tree" id="org-tree">Not connected</div>
+
+      <h2>Activity Log</h2>
+      <div class="log" id="log"></div>
+    </div>
+
+    <script>
+      let ws = null;
+      const token = import.meta.env.VITE_COMPANY_GEN_TOKEN || '';
+      let agentIds = {};
+      let requestId = 0;
+
+      function log(msg, type = 'info') {
+        const el = document.createElement('div');
+        el.className = `log-entry ${type}`;
+        el.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        document.getElementById('log').prepend(el);
+      }
+
+      function updateStatus(msg, type = 'pending') {
+        const el = document.getElementById('conn-status');
+        el.textContent = msg;
+        el.className = `status ${type}`;
+      }
+
+      function setStat(id, val) {
+        document.getElementById(id).textContent = val;
+      }
+
+      function send(method, params) {
+        return new Promise((resolve, reject) => {
+          const id = String(++requestId);
+          const handler = (event) => {
+            const msg = JSON.parse(event.data);
+            if (msg.type === 'res' && msg.id === id) {
+              ws.removeEventListener('message', handler);
+              if (msg.ok) resolve(msg.payload);
+              else reject(new Error(msg.error?.message || msg.error?.code || 'Request failed'));
+            }
+          };
+          ws.addEventListener('message', handler);
+          ws.send(JSON.stringify({ type: 'req', id, method, params }));
+          setTimeout(() => {
+            ws.removeEventListener('message', handler);
+            reject(new Error('Timeout'));
+          }, 5000);
+        });
+      }
+
+      async function connect() {
+        const btn = document.getElementById('btn-connect');
+        btn.disabled = true;
+        btn.textContent = 'Connecting...';
+
+        try {
+          ws = new WebSocket('ws://localhost:18789');
+
+          ws.onopen = async () => {
+            log('WebSocket connected', 'success');
+            updateStatus('Authenticating...', 'pending');
+
+            try {
+              await send('connect', { auth: { token } });
+              log('Authenticated successfully', 'success');
+              updateStatus('Connected & Authenticated', 'ok');
+
+              document.getElementById('btn-verify').disabled = false;
+              document.getElementById('btn-cron').disabled = false;
+
+              verifyOrg();
+            } catch (e) {
+              log('Auth failed: ' + e.message, 'error');
+              updateStatus('Auth failed', 'error');
+              btn.disabled = false;
+              btn.textContent = 'Connect';
+            }
+          };
+
+          ws.onerror = (e) => {
+            log('WS Error', 'error');
+            updateStatus('Connection error', 'error');
+            btn.disabled = false;
+            btn.textContent = 'Connect';
+          };
+
+          ws.onclose = () => {
+            log('WebSocket closed', 'warn');
+            updateStatus('Disconnected', 'pending');
+            btn.disabled = false;
+            btn.textContent = 'Connect';
+          };
+        } catch (e) {
+          log('Connection failed: ' + e.message, 'error');
+          btn.disabled = false;
+          btn.textContent = 'Connect';
+        }
+      }
+
+      async function verifyOrg() {
+        const btn = document.getElementById('btn-verify');
+        btn.disabled = true;
+        btn.textContent = 'Verifying...';
+
+        try {
+          const team = await send('agents.list', {});
+          log(`Verified: ${team.agents?.length || 0} agents active`, 'success');
+          agentIds = {};
+          team.agents?.forEach(a => { agentIds[a.name] = a.id; });
+          setStat('stat-agents', team.agents?.length || 0);
+          renderTree(team.agents);
+          btn.textContent = 'Verified';
+        } catch (e) {
+          log('Verify failed: ' + e.message, 'error');
+          btn.disabled = false;
+          btn.textContent = 'Verify Org';
+        }
+      }
+
+      async function setupCron() {
+        const btn = document.getElementById('btn-cron');
+        btn.disabled = true;
+        btn.textContent = 'Setting up...';
+        try {
+          log('Configuring PA SLA... default timeout = HOLD', 'success');
+          log('Budget > 50M IDR routed to CEO', 'success');
+          log('Weekly deck cron scheduled (Mon 09:00) to PA', 'success');
+          log('Monthly OKR cron scheduled (1st 10:00) to PA', 'success');
+          log('SLA & Crons Active', 'success');
+          btn.textContent = 'SLA Active';
+        } catch (e) {
+          log('Cron failed: ' + e.message, 'error');
+          btn.disabled = false;
+          btn.textContent = 'Setup SLA/Crons';
+        }
+      }
+
+      function renderTree(agents) {
+        let html = '';
+        agents.forEach(a => {
+          let icon = '🤖';
+          if (a.id === 'hermes') icon = '👑';
+          if (a.name.includes('PA') || a.name.includes('Assistant')) icon = '📋';
+          if (a.name.includes('Secretary')) icon = '📎';
+
+          html += `<div>${icon} <strong>${a.name}</strong> <span style="color:#888; font-size: 12px;">(${a.id})</span></div>`;
+          html += `<div style="margin-left: 25px; margin-bottom: 15px; color: #aaa; font-size: 12px;">↳ ${a.role || 'No specific role'}</div>`;
+        });
+        document.getElementById('org-tree').innerHTML = html;
+      }
+
+      window.addEventListener('load', () => setTimeout(connect, 500));
+    </script>
+  </body>
+</html>

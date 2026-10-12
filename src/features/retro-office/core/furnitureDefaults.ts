@@ -28,44 +28,44 @@ export type OfficeLayoutPreset = "office" | "lobby";
 
 const DEFAULT_PINGPONG_TABLE: FurnitureSeed = {
   type: "pingpong",
-  x: 950,
-  y: 600,
+  x: 1530,
+  y: 1050,
   w: 100,
   h: 60,
 };
 
 const DEFAULT_ATM_MACHINE: FurnitureSeed = {
   type: "atm",
-  x: 430,
-  y: 210,
+  x: 1160,
+  y: 1030,
   facing: 90,
 };
 
 const DEFAULT_PHONE_BOOTH: FurnitureSeed = {
   type: "phone_booth",
-  x: 1050,
-  y: 190,
+  x: 1220,
+  y: 520,
   facing: 270,
 };
 
 const DEFAULT_SMS_BOOTH: FurnitureSeed = {
   type: "sms_booth",
-  x: 700,
-  y: 10,
+  x: 1580,
+  y: 520,
   facing: 0,
 };
 
 const DEFAULT_JUKEBOX: FurnitureSeed = {
   type: "jukebox",
-  x: 20,
-  y: 380,
+  x: 1580,
+  y: 300,
   facing: 90,
 };
 
 const DEFAULT_KANBAN_BOARD: FurnitureSeed = {
   type: "kanban_board",
-  x: 460,
-  y: -60,
+  x: 1160,
+  y: 1120,
   facing: 180,
 };
 
@@ -112,20 +112,9 @@ const DEFAULT_DINING_ITEMS: FurnitureSeed[] = [
 ];
 
 const DEFAULT_SERVER_ROOM_ITEMS: FurnitureSeed[] = [
-  { type: "wall", x: 0, y: 560, w: 230, h: WALL_THICKNESS },
-  { type: "wall", x: 220, y: 560, w: WALL_THICKNESS, h: 60 },
-  {
-    type: "door",
-    x: 210,
-    y: 630,
-    w: DOOR_LENGTH,
-    h: DOOR_THICKNESS,
-    facing: 90,
-  },
-  { type: "wall", x: 220, y: 660, w: WALL_THICKNESS, h: 60 },
-  { type: "server_rack", x: 50, y: 595, facing: 0 },
-  { type: "server_rack", x: 125, y: 595, facing: 0 },
-  { type: "server_terminal", x: 110, y: 645, facing: 180 },
+  { type: "server_rack", x: 1230, y: 710, facing: 0 },
+  { type: "server_rack", x: 1320, y: 710, facing: 0 },
+  { type: "server_terminal", x: 1270, y: 780, facing: 180 },
 ];
 
 const LEGACY_GYM_ROOM_ITEMS: FurnitureSeed[] = [
@@ -299,125 +288,28 @@ const PREVIOUS_QA_LAB_ITEMS: FurnitureSeed[] = [
 ];
 
 const DEFAULT_GYM_ITEMS: FurnitureSeed[] = [
-  {
-    type: "wall",
-    x: GYM_ROOM_X,
-    y: EAST_WING_ROOM_TOP_Y,
-    w: WALL_THICKNESS,
-    h: EAST_WING_ROOM_HEIGHT,
-  },
-  {
-    type: "wall",
-    x: GYM_ROOM_X,
-    y: EAST_WING_ROOM_TOP_Y,
-    w: GYM_ROOM_END_X - GYM_ROOM_X + WALL_THICKNESS,
-    h: WALL_THICKNESS,
-  },
-  {
-    type: "wall",
-    x: GYM_ROOM_X,
-    y: EAST_WING_ROOM_BOTTOM_WALL_Y,
-    w: GYM_ROOM_END_X - GYM_ROOM_X + WALL_THICKNESS,
-    h: WALL_THICKNESS,
-  },
-  {
-    type: "wall",
-    x: GYM_ROOM_END_X,
-    y: EAST_WING_ROOM_TOP_Y,
-    w: WALL_THICKNESS,
-    h: 220,
-  },
-  {
-    type: "door",
-    x: 1280,
-    y: 280,
-    w: DOOR_LENGTH,
-    h: DOOR_THICKNESS,
-    facing: 90,
-  },
-  {
-    type: "wall",
-    x: GYM_ROOM_END_X,
-    y: 300,
-    w: WALL_THICKNESS,
-    h: 380,
-  },
-  { type: "treadmill", x: 1142, y: 90, facing: 90 },
-  { type: "weight_bench", x: 1204, y: 92, facing: 90 },
-  { type: "dumbbell_rack", x: 1220, y: 160, facing: 180 },
-  { type: "rowing_machine", x: 1140, y: 222, facing: 90 },
-  { type: "kettlebell_rack", x: 1224, y: 248, facing: 180 },
-  { type: "exercise_bike", x: 1146, y: 366, facing: 90 },
-  { type: "punching_bag", x: 1266, y: 380, facing: 0 },
-  { type: "yoga_mat", x: 1168, y: 542, facing: 0, color: "#0f766e" },
-  { type: "plant", x: 1268, y: 82 },
-  { type: "plant", x: 1268, y: 622 },
+  { type: "treadmill", x: 1230, y: 290, facing: 90 },
+  { type: "weight_bench", x: 1310, y: 290, facing: 90 },
+  { type: "dumbbell_rack", x: 1400, y: 300, facing: 180 },
+  { type: "rowing_machine", x: 1230, y: 365, facing: 90 },
+  { type: "kettlebell_rack", x: 1310, y: 365, facing: 180 },
+  { type: "exercise_bike", x: 1400, y: 370, facing: 90 },
+  { type: "punching_bag", x: 1270, y: 410, facing: 0 },
+  { type: "yoga_mat", x: 1360, y: 410, facing: 0, color: "#0f766e" },
 ];
 
 const DEFAULT_QA_LAB_ITEMS: FurnitureSeed[] = [
-  {
-    type: "wall",
-    x: QA_LAB_X,
-    y: EAST_WING_ROOM_TOP_Y,
-    w: WALL_THICKNESS,
-    h: 220,
-  },
-  {
-    type: "door",
-    x: 1340,
-    y: 280,
-    w: DOOR_LENGTH,
-    h: DOOR_THICKNESS,
-    facing: 90,
-  },
-  {
-    type: "wall",
-    x: QA_LAB_X,
-    y: 300,
-    w: WALL_THICKNESS,
-    h: 380,
-  },
-  {
-    type: "wall",
-    x: QA_LAB_X,
-    y: EAST_WING_ROOM_TOP_Y,
-    w: QA_LAB_END_X - QA_LAB_X + WALL_THICKNESS,
-    h: WALL_THICKNESS,
-  },
-  {
-    type: "wall",
-    x: QA_LAB_X,
-    y: EAST_WING_ROOM_BOTTOM_WALL_Y,
-    w: QA_LAB_END_X - QA_LAB_X + WALL_THICKNESS,
-    h: WALL_THICKNESS,
-  },
-  {
-    type: "wall",
-    x: QA_LAB_END_X,
-    y: EAST_WING_ROOM_TOP_Y,
-    w: WALL_THICKNESS,
-    h: EAST_WING_ROOM_HEIGHT,
-  },
-  { type: "qa_terminal", x: 1374, y: 92, facing: 90 },
-  { type: "device_rack", x: 1454, y: 92, facing: 180 },
-  { type: "device_rack", x: 1454, y: 204, facing: 180 },
-  { type: "test_bench", x: 1372, y: 316, facing: 90 },
-  { type: "test_bench", x: 1372, y: 450, facing: 90 },
-  { type: "plant", x: 1496, y: 82 },
-  { type: "plant", x: 1496, y: 622 },
+  { type: "qa_terminal", x: 1230, y: 710, facing: 90 },
+  { type: "device_rack", x: 1360, y: 710, facing: 180 },
+  { type: "device_rack", x: 1360, y: 790, facing: 180 },
+  { type: "test_bench", x: 1230, y: 810, facing: 90 },
+  { type: "test_bench", x: 1360, y: 810, facing: 90 },
 ];
 
 const DEFAULT_ART_ROOM_ITEMS: FurnitureSeed[] = [
-  { type: "wall", x: 260, y: 40, w: 8, h: 230 },
-  { type: "wall", x: 260, y: 40, w: 178, h: 8 },
-  { type: "wall", x: 260, y: 262, w: 178, h: 8 },
-  { type: "wall", x: 430, y: 40, w: 8, h: 90 },
-  { type: "door", x: 420, y: 150, w: 40, h: 8, facing: 90 },
-  { type: "wall", x: 430, y: 170, w: 8, h: 100 },
-  { type: "easel", x: 278, y: 84, facing: 90 },
-  { type: "easel", x: 278, y: 158, facing: 90 },
-  { type: "plant", x: 280, y: 60 },
-  { type: "plant", x: 280, y: 240 },
+  { type: "easel", x: 1530, y: 710, facing: 90 },
+  { type: "easel", x: 1650, y: 710, facing: 90 },
+  { type: "whiteboard", x: 1530, y: 810, w: 10, h: 60 },
 ];
 
 const DEFAULT_LOBBY_FURNITURE: FurnitureSeed[] = [
@@ -453,117 +345,229 @@ const DEFAULT_LOBBY_FURNITURE: FurnitureSeed[] = [
   ...DEFAULT_ART_ROOM_ITEMS,
 ];
 
+const createWorkstation = (
+  id: string,
+  x: number,
+  y: number,
+): FurnitureSeed[] => [
+  { type: "desk_cubicle", x, y, id },
+  { type: "chair", x: x + 22, y: y - 10, facing: 180 },
+  { type: "computer", x: x + 22, y: y - 13 },
+  { type: "keyboard", x: x + 32, y: y - 5 },
+  { type: "mouse", x: x + 54, y: y - 5 },
+  { type: "trash", x: x + 78, y: y - 10 },
+];
+
+const createWorkstationGrid = (
+  prefix: string,
+  startX: number,
+  startY: number,
+  columns: number,
+  rows: number,
+  gapX = 130,
+  gapY = 118,
+): FurnitureSeed[] =>
+  Array.from({ length: rows }).flatMap((_, row) =>
+    Array.from({ length: columns }).flatMap((_, column) =>
+      createWorkstation(
+        `${prefix}_${row}_${column}`,
+        startX + column * gapX,
+        startY + row * gapY,
+      ),
+    ),
+  );
+
+const createRoomZone = (
+  id: string,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  color: string,
+): FurnitureSeed[] => [
+  { type: "room_zone", id, x, y, w, h, color },
+  {
+    type: "room_label",
+    id,
+    x: x + w / 2 - Math.min(210, Math.max(128, w * 0.54)) / 2,
+    y: y + 18,
+    w: Math.min(210, Math.max(128, w * 0.54)),
+    h: 36,
+    color,
+  },
+];
+
+type OfficeRoomSpec = {
+  id: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  color: string;
+};
+
+const createRoomShell = ({ x, y, w, h }: OfficeRoomSpec): FurnitureSeed[] => {
+  const doorWidth = DOOR_LENGTH + 12;
+  const doorLeftWidth = Math.max(0, w / 2 - doorWidth / 2);
+  const doorRightX = x + w / 2 + doorWidth / 2;
+  const doorRightWidth = Math.max(0, x + w - doorRightX);
+  return [
+    { type: "wall", x, y, w, h: WALL_THICKNESS },
+    { type: "wall", x, y: y + h - WALL_THICKNESS, w: doorLeftWidth, h: WALL_THICKNESS },
+    {
+      type: "wall",
+      x: doorRightX,
+      y: y + h - WALL_THICKNESS,
+      w: doorRightWidth,
+      h: WALL_THICKNESS,
+    },
+    {
+      type: "door",
+      x: x + w / 2 - DOOR_LENGTH / 2,
+      y: y + h - DOOR_THICKNESS,
+      w: DOOR_LENGTH,
+      h: DOOR_THICKNESS,
+      facing: 0,
+    },
+    { type: "wall", x, y, w: WALL_THICKNESS, h },
+    { type: "wall", x: x + w - WALL_THICKNESS, y, w: WALL_THICKNESS, h },
+  ];
+};
+
+const DEFAULT_OFFICE_ROOMS: OfficeRoomSpec[] = [
+  // Management wing: one private office per management function.
+  { id: "CEO SUITE|AI owner and strategy", x: 30, y: 240, w: 175, h: 170, color: "#2563eb" },
+  { id: "COO OFFICE|Operating cadence", x: 225, y: 240, w: 175, h: 170, color: "#0f766e" },
+  { id: "CFO OFFICE|Finance and capital", x: 420, y: 240, w: 175, h: 170, color: "#ca8a04" },
+  { id: "LEGAL OFFICE|Contracts and compliance", x: 30, y: 450, w: 175, h: 170, color: "#7c3aed" },
+  { id: "RISK OFFICE|Audit and evidence", x: 225, y: 450, w: 175, h: 170, color: "#dc2626" },
+  { id: "SECURITY OFFICE|Access and guardrails", x: 420, y: 450, w: 175, h: 170, color: "#0891b2" },
+  // Division wing: each team has a proper enclosed workroom.
+  { id: "ENGINEERING DIVISION|ERP builders", x: 650, y: 240, w: 230, h: 170, color: "#15803d" },
+  { id: "DATA + RND DIVISION|Research and analytics", x: 900, y: 240, w: 230, h: 170, color: "#9333ea" },
+  { id: "MARKETING DIVISION|Brand and growth", x: 650, y: 450, w: 230, h: 170, color: "#ea580c" },
+  { id: "PEOPLE DIVISION|HR and recruitment", x: 900, y: 450, w: 230, h: 170, color: "#0d9488" },
+  { id: "FINANCE OPS DIVISION|Budget and billing", x: 650, y: 660, w: 230, h: 170, color: "#a16207" },
+  { id: "AGENT OPS DIVISION|Recruit train retire", x: 900, y: 660, w: 230, h: 170, color: "#4f46e5" },
+  // Work-life balance and shared support rooms.
+  { id: "WELLBEING GYM|Fitness and recovery", x: 1190, y: 240, w: 280, h: 170, color: "#059669" },
+  { id: "CAFE LOUNGE|Food and social", x: 1500, y: 240, w: 270, h: 170, color: "#d97706" },
+  { id: "QUIET ROOM|Focus and reset", x: 1190, y: 450, w: 280, h: 170, color: "#6366f1" },
+  { id: "MEETING HUB|Collaboration and standup", x: 1500, y: 450, w: 270, h: 170, color: "#0284c7" },
+  { id: "IT + QA LAB|Infrastructure and testing", x: 1190, y: 660, w: 280, h: 170, color: "#334155" },
+  { id: "CREATIVE STUDIO|Content and personal brand", x: 1500, y: 660, w: 270, h: 170, color: "#db2777" },
+  // Only active projects are rendered as project rooms.
+  { id: "GOORU PROJECT|Digital marketing only", x: 30, y: 930, w: 340, h: 300, color: "#6d28d9" },
+  { id: "PABK PROJECT|ERP plus digital marketing", x: 390, y: 930, w: 340, h: 300, color: "#d97706" },
+  { id: "FCP PROJECT|ERP plus digital marketing", x: 750, y: 930, w: 340, h: 300, color: "#0284c7" },
+  { id: "SHARED SERVICES|Admin and personal ops", x: 1120, y: 930, w: 320, h: 300, color: "#0f766e" },
+  { id: "PERSONAL OPS|Assistant and household", x: 1480, y: 930, w: 290, h: 300, color: "#475569" },
+];
+
+const DEFAULT_ROOM_ZONES: FurnitureSeed[] = DEFAULT_OFFICE_ROOMS.flatMap(
+  ({ id, x, y, w, h, color }) => createRoomZone(id, x, y, w, h, color),
+);
+
+const DEFAULT_WORKROOM_PARTITIONS: FurnitureSeed[] =
+  DEFAULT_OFFICE_ROOMS.flatMap(createRoomShell);
+
+const DEFAULT_AGENT_WORKSTATIONS: FurnitureSeed[] = [
+  ...createWorkstationGrid("mgmt_ceo", 66, 302, 1, 2, 0, 64),
+  ...createWorkstationGrid("mgmt_ops", 261, 302, 1, 2, 0, 64),
+  ...createWorkstationGrid("mgmt_finance", 456, 302, 1, 2, 0, 64),
+  ...createWorkstationGrid("mgmt_legal", 66, 512, 1, 2, 0, 64),
+  ...createWorkstationGrid("mgmt_risk", 261, 512, 1, 2, 0, 64),
+  ...createWorkstationGrid("mgmt_security", 456, 512, 1, 2, 0, 64),
+  ...createWorkstationGrid("division_engineering", 680, 302, 2, 1, 115, 0),
+  ...createWorkstationGrid("division_data", 930, 302, 2, 1, 115, 0),
+  ...createWorkstationGrid("division_marketing", 680, 512, 2, 1, 115, 0),
+  ...createWorkstationGrid("division_people", 930, 512, 2, 1, 115, 0),
+  ...createWorkstationGrid("division_finance", 680, 722, 2, 1, 115, 0),
+  ...createWorkstationGrid("division_agent_ops", 930, 722, 2, 1, 115, 0),
+  ...createWorkstationGrid("project_gooru", 64, 990, 3, 2, 104, 104),
+  ...createWorkstationGrid("project_pabk", 424, 990, 3, 2, 104, 104),
+  ...createWorkstationGrid("project_fcp", 784, 990, 3, 2, 104, 104),
+  ...createWorkstationGrid("division_admin", 1150, 990, 2, 2, 120, 104),
+  ...createWorkstationGrid("division_personal_ops", 1510, 990, 2, 2, 110, 104),
+];
+
 const DEFAULT_FURNITURE: FurnitureSeed[] = [
-  { type: "round_table", x: 50, y: 50, r: 90 },
-  { type: "chair", x: 130, y: 50, facing: 0 },
-  { type: "chair", x: 200, y: 90, facing: 325 },
-  { type: "chair", x: 180, y: 170, facing: 240 },
-  { type: "chair", x: 120, y: 480, facing: 180 },
-  { type: "chair", x: 50, y: 150, facing: 105 },
-  { type: "chair", x: 60, y: 80, facing: 60 },
-  { type: "chair", x: 550, y: 50, facing: 0 },
-  { type: "bookshelf", x: 600, y: 30, w: 80, h: 120 },
-  { type: "couch", x: 270, y: 90, w: 40, h: 80, vertical: true, facing: 180 },
-  { type: "fridge", x: 1050, y: 20, w: 40, h: 80 },
-  { type: "stove", x: 920, y: 20 },
-  { type: "cabinet", x: 980, y: 30, w: 40, h: 40 },
-  { type: "microwave", x: 1030, y: 10, facing: 0 },
-  { type: "sink", x: 970, y: 20 },
-  { type: "dishwasher", x: 950, y: 20, w: 40, h: 40 },
-  { type: "cabinet", x: 840, y: 30, w: 80, h: 40, elevation: 0 },
-  { type: "coffee_machine", x: 880, y: 30, elevation: 0.56 },
-  { type: "wall_cabinet", x: 960, y: 10, w: 80, h: 20, elevation: 0.9 },
-  { type: "wall_cabinet", x: 880, y: 10, w: 80, h: 20, elevation: 0.9 },
-  { type: "round_table", x: 890, y: 100, r: 50 },
-  { type: "chair", x: 930, y: 100, facing: 0 },
-  { type: "chair", x: 930, y: 180, facing: 180 },
-  { type: "chair", x: 880, y: 130, facing: 90 },
-  { type: "chair", x: 970, y: 130, facing: 270 },
-  { type: "vending", x: 790, y: 10 },
-  { type: "trash", x: 210, y: 20 },
-  { type: "desk_cubicle", x: 100, y: 300, id: "desk_0" },
-  { type: "chair", x: 120, y: 290, facing: 180 },
-  { type: "computer", x: 120, y: 287 },
-  { type: "keyboard", x: 130, y: 295 },
-  { type: "mouse", x: 152, y: 295 },
-  { type: "trash", x: 170, y: 290 },
-  { type: "desk_cubicle", x: 300, y: 300, id: "desk_1" },
-  { type: "chair", x: 320, y: 290, facing: 180 },
-  { type: "computer", x: 320, y: 287 },
-  { type: "keyboard", x: 330, y: 295 },
-  { type: "mouse", x: 352, y: 295 },
-  { type: "trash", x: 370, y: 290 },
-  { type: "desk_cubicle", x: 500, y: 300, id: "desk_2" },
-  { type: "chair", x: 520, y: 290, facing: 180 },
-  { type: "computer", x: 520, y: 287 },
-  { type: "keyboard", x: 530, y: 295 },
-  { type: "mouse", x: 552, y: 295 },
-  { type: "trash", x: 570, y: 290 },
-  { type: "desk_cubicle", x: 700, y: 300, id: "desk_3" },
-  { type: "chair", x: 720, y: 290, facing: 180 },
-  { type: "computer", x: 720, y: 287 },
-  { type: "keyboard", x: 730, y: 295 },
-  { type: "mouse", x: 752, y: 295 },
-  { type: "trash", x: 770, y: 290 },
-  { type: "desk_cubicle", x: 100, y: 500, id: "desk_4" },
-  { type: "computer", x: 120, y: 487 },
-  { type: "keyboard", x: 130, y: 490 },
-  { type: "mouse", x: 152, y: 495 },
-  { type: "trash", x: 170, y: 490 },
-  { type: "desk_cubicle", x: 300, y: 500, id: "desk_5" },
-  { type: "chair", x: 310, y: 490, facing: 180 },
-  { type: "computer", x: 320, y: 487 },
-  { type: "keyboard", x: 330, y: 495 },
-  { type: "mouse", x: 352, y: 495 },
-  { type: "trash", x: 370, y: 500 },
-  { type: "desk_cubicle", x: 500, y: 500, id: "desk_6" },
-  { type: "chair", x: 520, y: 490, facing: 180 },
-  { type: "computer", x: 520, y: 487 },
-  { type: "keyboard", x: 530, y: 495 },
-  { type: "mouse", x: 552, y: 495 },
-  { type: "trash", x: 570, y: 490 },
-  { type: "desk_cubicle", x: 700, y: 500, id: "desk_7" },
-  { type: "chair", x: 720, y: 490, facing: 180 },
-  { type: "computer", x: 720, y: 487 },
-  { type: "keyboard", x: 730, y: 495 },
-  { type: "mouse", x: 752, y: 495 },
-  { type: "trash", x: 770, y: 490 },
-  { type: "couch", x: 1000, y: 380, w: 100, h: 40, facing: 90 },
-  { type: "couch", x: 390, y: 630, w: 100, h: 40 },
-  { type: "table_rect", x: 980, y: 380, w: 60, h: 30, facing: 270 },
-  { type: "pingpong", x: 950, y: 600, w: 100, h: 60 },
-  { type: "beanbag", x: 1000, y: 330, color: "#e65100", facing: 90 },
-  { type: "beanbag", x: 1000, y: 410, color: "#1565c0", facing: 90 },
+  // Reception and common support are kept in open areas, outside workrooms.
+  { type: "round_table", x: 95, y: 92, r: 62 },
+  { type: "chair", x: 150, y: 92, facing: 0 },
+  { type: "chair", x: 118, y: 145, facing: 225 },
+  { type: "chair", x: 55, y: 145, facing: 135 },
+  { type: "bookshelf", x: 220, y: 42, w: 76, h: 108 },
+  { type: "whiteboard", x: 620, y: 75, w: 10, h: 70 },
+  { type: "clock", x: 540, y: 28 },
+  { type: "trash", x: 610, y: 110 },
+  { type: "lamp", x: 520, y: 160 },
+  // Cafe lounge: food, hydration, informal conversation, and idle seating.
+  { type: "fridge", x: 1530, y: 275, w: 40, h: 80 },
+  { type: "coffee_machine", x: 1600, y: 275, elevation: 0.56 },
+  { type: "vending", x: 1680, y: 275 },
+  { type: "round_table", x: 1625, y: 350, r: 42 },
+  { type: "chair", x: 1625, y: 300, facing: 0 },
+  { type: "chair", x: 1625, y: 400, facing: 180 },
+  { type: "chair", x: 1575, y: 350, facing: 90 },
+  { type: "chair", x: 1675, y: 350, facing: 270 },
+  { type: "plant", x: 1730, y: 380 },
+  // Quiet and meeting rooms provide intentional breaks and collaboration.
+  { type: "couch", x: 1225, y: 500, w: 100, h: 40, facing: 90 },
+  { type: "beanbag", x: 1360, y: 520, color: "#1565c0", facing: 90 },
+  { type: "beanbag", x: 1360, y: 575, color: "#7c3aed", facing: 90 },
+  { type: "table_rect", x: 1580, y: 500, w: 120, h: 42, facing: 0 },
+  { type: "chair", x: 1600, y: 575, facing: 180 },
+  { type: "chair", x: 1690, y: 575, facing: 180 },
+  { type: "plant", x: 1450, y: 560 },
+  // Personal ops is the recreation and assistant support area.
+  { type: "couch", x: 1515, y: 1040, w: 100, h: 40, facing: 90 },
+  { type: "couch", x: 1650, y: 1140, w: 40, h: 80, vertical: true, facing: 180 },
+  { type: "table_rect", x: 1600, y: 1080, w: 70, h: 36, facing: 270 },
+  { type: "beanbag", x: 1520, y: 1140, color: "#e65100", facing: 90 },
+  { type: "beanbag", x: 1600, y: 1170, color: "#1565c0", facing: 90 },
+  { type: "plant", x: 1730, y: 1160 },
+  ...DEFAULT_ROOM_ZONES,
+  ...DEFAULT_WORKROOM_PARTITIONS,
+  ...DEFAULT_AGENT_WORKSTATIONS,
   DEFAULT_ATM_MACHINE,
   DEFAULT_PHONE_BOOTH,
   DEFAULT_KANBAN_BOARD,
-  { type: "whiteboard", x: 40, y: 200, w: 10, h: 60 },
-  { type: "clock", x: 550, y: 5 },
-  { type: "lamp", x: 430, y: 100 },
-  { type: "lamp", x: 980, y: 390 },
-  { type: "trash", x: 830, y: 20 },
-  { type: "plant", x: 40, y: 40 },
-  { type: "plant", x: 660, y: 30 },
-  { type: "plant", x: 340, y: 700 },
-  { type: "plant", x: 450, y: 450 },
-  { type: "plant", x: 1090, y: 310 },
-  { type: "plant", x: 1100, y: 490 },
-  { type: "plant", x: 530, y: 700 },
+  DEFAULT_SMS_BOOTH,
   ...DEFAULT_SERVER_ROOM_ITEMS,
   ...DEFAULT_GYM_ITEMS,
   ...DEFAULT_QA_LAB_ITEMS,
   ...DEFAULT_ART_ROOM_ITEMS,
-  DEFAULT_SMS_BOOTH,
-  { type: "chair", x: 100, y: 200, facing: 180 },
 ];
 
 export const materializeDefaults = (
   preset: OfficeLayoutPreset = "office",
 ): FurnitureItem[] =>
-  (preset === "lobby" ? DEFAULT_LOBBY_FURNITURE : DEFAULT_FURNITURE).map((item, index) => ({
-    ...item,
-    _uid: `${preset}_${index}`,
-  }));
+  (preset === "lobby" ? DEFAULT_LOBBY_FURNITURE : DEFAULT_FURNITURE).map(
+    (item, index) => ({
+      ...item,
+      _uid:
+        item.type === "desk_cubicle" && item.id
+          ? `${preset}_desk_${item.id}`
+          : `${preset}_${index}`,
+    }),
+  );
+
+export const getZoneDeskUids = (
+  preset: OfficeLayoutPreset = "office",
+): Map<string, string[]> => {
+  const items = materializeDefaults(preset);
+  const result = new Map<string, string[]>();
+  for (const item of items) {
+    if (item.type !== "desk_cubicle" || !item.id) continue;
+    const parts = item.id.split("_");
+    if (parts.length < 3) continue;
+    const zone = parts.slice(0, parts.length - 2).join("_");
+    if (!result.has(zone)) result.set(zone, []);
+    result.get(zone)!.push(item._uid);
+  }
+  return result;
+};
 
 export const isRetiredPingPongLamp = (item: FurnitureItem) =>
   item.type === "lamp" &&
@@ -638,12 +642,16 @@ export const ensureOfficeAtm = (items: FurnitureItem[]): FurnitureItem[] => {
   return [...items, { ...DEFAULT_ATM_MACHINE, _uid: nextUid() }];
 };
 
-export const ensureOfficeJukebox = (items: FurnitureItem[]): FurnitureItem[] => {
+export const ensureOfficeJukebox = (
+  items: FurnitureItem[],
+): FurnitureItem[] => {
   if (items.some((item) => item.type === "jukebox")) return items;
   return [...items, { ...DEFAULT_JUKEBOX, _uid: nextUid() }];
 };
 
-export const ensureOfficeKanbanBoard = (items: FurnitureItem[]): FurnitureItem[] => {
+export const ensureOfficeKanbanBoard = (
+  items: FurnitureItem[],
+): FurnitureItem[] => {
   if (items.some((item) => item.type === "kanban_board")) return items;
   return [...items, { ...DEFAULT_KANBAN_BOARD, _uid: nextUid() }];
 };

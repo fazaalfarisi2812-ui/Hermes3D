@@ -105,6 +105,84 @@ describe("createGatewayProxy", () => {
     }
   });
 
+  it("injects the local Hermes token alongside device auth", async () => {
+    const upstream = new WebSocketServer({ port: 0 });
+    const address = upstream.address();
+    if (!address || typeof address === "string") {
+      throw new Error("expected upstream server to have a port");
+    }
+    const upstreamUrl = `ws://127.0.0.1:${address.port}`;
+
+    let seenToken: string | null = null;
+    upstream.on("connection", (ws) => {
+      ws.on("message", (raw) => {
+        const parsed = JSON.parse(String(raw));
+        if (parsed?.method !== "connect") return;
+        seenToken = parsed?.params?.auth?.token ?? null;
+        ws.send(
+          JSON.stringify({
+            type: "res",
+            id: parsed.id,
+            ok: true,
+            payload: { type: "hello-ok", protocol: 3, auth: {} },
+          })
+        );
+      });
+    });
+
+    const { createGatewayProxy } = await import("../../server/gateway-proxy");
+    const proxyHttp = await import("node:http").then((m) => m.createServer());
+    const proxy = createGatewayProxy({
+      loadUpstreamSettings: async () => ({
+        url: upstreamUrl,
+        token: "token-123",
+        adapterType: "hermes",
+      }),
+      allowWs: (req: { url?: string }) => req.url === "/api/gateway/ws",
+      logError: () => {},
+    });
+    proxyHttp.on("upgrade", (req, socket, head) => proxy.handleUpgrade(req, socket, head));
+
+    await new Promise<void>((resolve) => proxyHttp.listen(0, "127.0.0.1", resolve));
+    const proxyAddr = proxyHttp.address();
+    if (!proxyAddr || typeof proxyAddr === "string") {
+      throw new Error("expected proxy server to have a port");
+    }
+
+    const browser = new WebSocket(`ws://127.0.0.1:${proxyAddr.port}/api/gateway/ws`);
+    try {
+      await waitForEvent(browser, "open");
+      browser.send(
+        JSON.stringify({
+          type: "req",
+          id: "connect-1",
+          method: "connect",
+          params: {
+            device: {
+              id: "device-1",
+              publicKey: "public-key",
+              signature: "signature",
+              nonce: "nonce",
+              signedAt: Date.now(),
+            },
+          },
+        })
+      );
+
+      await waitForEvent(browser, "message");
+      expect(seenToken).toBe("token-123");
+    } finally {
+      for (const client of upstream.clients) {
+        client.close();
+      }
+      await Promise.all([
+        closeWebSocket(browser),
+        closeWebSocketServer(upstream),
+        closeHttpServer(proxyHttp),
+      ]);
+    }
+  });
+
   it("surfaces the hermes-agent bridge's own reason instead of a generic transport error", async () => {
     // Bind and immediately release a port so the bridge's connection is refused
     // with a specific errno rather than hanging.

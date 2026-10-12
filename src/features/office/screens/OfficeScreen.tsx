@@ -67,6 +67,7 @@ import {
   RemoteAgentChatPanel,
   type RemoteAgentChatMessage,
 } from "@/features/office/components/RemoteAgentChatPanel";
+import { P2PMeetingRoom } from "@/features/office/components/P2PMeetingRoom";
 import { useOfficeFloorRuntimePersistence } from "@/features/office/hooks/useOfficeFloorRuntimePersistence";
 import {
   type RuntimeAgentMessageMode,
@@ -132,6 +133,10 @@ import {
   HQSidebar,
   type HQSidebarTab,
 } from "@/features/office/components/HQSidebar";
+import {
+  autoDeskAssignByDepartment,
+  type OrgAgentBasic,
+} from "@/lib/office/autoDeskAssign";
 import { CompanyBuilderModal } from "@/features/company-builder/components/CompanyBuilderModal";
 import {
   buildGenerateCompanyPlanPrompt,
@@ -902,6 +907,15 @@ type OfficeScreenProps = {
   showHermesConsole?: boolean;
 };
 
+const areDeskAssignmentsEqual = (
+  left: Record<string, string>,
+  right: Record<string, string>,
+) => {
+  const leftEntries = Object.entries(left);
+  if (leftEntries.length !== Object.keys(right).length) return false;
+  return leftEntries.every(([deskUid, agentId]) => right[deskUid] === agentId);
+};
+
 export function OfficeScreen({
   showHermesConsole = true,
 }: OfficeScreenProps) {
@@ -1064,6 +1078,8 @@ export function OfficeScreen({
   const [deskAssignmentByDeskUid, setDeskAssignmentByDeskUid] = useState<
     Record<string, string>
   >({});
+  const [deskAssignmentsLoaded, setDeskAssignmentsLoaded] = useState(false);
+  const [orgAgents, setOrgAgents] = useState<OrgAgentBasic[]>([]);
   // The office has a single floor — Hermes.
   const activeFloorId = DEFAULT_ACTIVE_FLOOR_ID;
   const [gatewayModels, setGatewayModels] = useState<GatewayModelChoice[]>([]);
@@ -1343,6 +1359,60 @@ export function OfficeScreen({
     [gatewayUrl, settingsCoordinator],
   );
 
+  const handleReorganizeDesks = useCallback(() => {
+    const key = gatewayUrl.trim();
+    if (!key || orgAgents.length === 0) return;
+    setDeskAssignmentByDeskUid((current) => {
+      const next = autoDeskAssignByDepartment(orgAgents, current);
+      if (areDeskAssignmentsEqual(current, next)) return current;
+      const patch: Record<string, string | null> = {};
+      for (const [deskUid, agentId] of Object.entries(next)) {
+        if (current[deskUid] !== agentId) patch[deskUid] = agentId;
+      }
+      for (const deskUid of Object.keys(current)) {
+        if (!(deskUid in next)) patch[deskUid] = null;
+      }
+      if (Object.keys(patch).length > 0) {
+        settingsCoordinator.schedulePatch(
+          { deskAssignments: { [key]: patch } },
+          0,
+        );
+      }
+      return next;
+    });
+  }, [gatewayUrl, orgAgents, settingsCoordinator]);
+
+  useEffect(() => {
+    const key = gatewayUrl.trim();
+    if (!deskAssignmentsLoaded || !key || orgAgents.length === 0) return;
+    setDeskAssignmentByDeskUid((current) => {
+      const next = autoDeskAssignByDepartment(orgAgents, current);
+      if (areDeskAssignmentsEqual(current, next)) return current;
+
+      const patch: Record<string, string | null> = {};
+      for (const [deskUid, agentId] of Object.entries(next)) {
+        if (current[deskUid] !== agentId) patch[deskUid] = agentId;
+      }
+      for (const deskUid of Object.keys(current)) {
+        if (!(deskUid in next)) patch[deskUid] = null;
+      }
+
+      if (Object.keys(patch).length > 0) {
+        settingsCoordinator.schedulePatch(
+          { deskAssignments: { [key]: patch } },
+          0,
+        );
+      }
+
+      return next;
+    });
+  }, [
+    deskAssignmentsLoaded,
+    gatewayUrl,
+    orgAgents,
+    settingsCoordinator,
+  ]);
+
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
@@ -1396,8 +1466,10 @@ export function OfficeScreen({
   useEffect(() => {
     let cancelled = false;
     const key = gatewayUrl.trim();
+    setDeskAssignmentsLoaded(false);
     if (!key) {
       setDeskAssignmentByDeskUid({});
+      setDeskAssignmentsLoaded(true);
       return;
     }
     void (async () => {
@@ -1407,15 +1479,62 @@ export function OfficeScreen({
         setDeskAssignmentByDeskUid(
           settings ? resolveDeskAssignments(settings, key) : {},
         );
+        setDeskAssignmentsLoaded(true);
       } catch {
         if (cancelled) return;
         setDeskAssignmentByDeskUid({});
+        setDeskAssignmentsLoaded(true);
       }
     })();
     return () => {
       cancelled = true;
     };
   }, [gatewayUrl, loadStudioSettings]);
+
+  useEffect(() => {
+    if (status !== "connected") return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch("/api/agent-identities");
+        if (cancelled) return;
+        const data = (await res.json()) as {
+          agents?: Array<{
+            id?: unknown;
+            name?: unknown;
+            role?: unknown;
+            department?: unknown;
+            project?: unknown;
+            projectStatus?: unknown;
+          }>;
+        };
+        if (cancelled) return;
+        if (Array.isArray(data.agents)) {
+          setOrgAgents(
+            data.agents
+              .filter((a) => typeof a.id === "string")
+              .map((a) => ({
+                id: a.id as string,
+                name: typeof a.name === "string" ? a.name : null,
+                role: typeof a.role === "string" ? a.role : null,
+                department:
+                  typeof a.department === "string" ? a.department : null,
+                project: typeof a.project === "string" ? a.project : null,
+                projectStatus:
+                  typeof a.projectStatus === "string"
+                    ? a.projectStatus
+                    : null,
+              })),
+          );
+        }
+      } catch {
+        // org data is optional; desk auto-assign just won't run
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [status]);
 
   useEffect(() => {
     let cancelled = false;
@@ -2848,6 +2967,7 @@ export function OfficeScreen({
 
   useEffect(() => {
     if (!selectedChatAgentId) return;
+    if (selectedChatAgentId === "__p2p_meeting_room__") return;
     if (state.agents.some((agent) => agent.agentId === selectedChatAgentId)) return;
     if (remoteChatAgentIds.includes(selectedChatAgentId)) return;
     setSelectedChatAgentId(null);
@@ -4879,6 +4999,7 @@ export function OfficeScreen({
           onOpenMarketplace={() => setMarketplaceOpen(true)}
           onAddAgent={handleOpenCreateAgentWizard}
           onOpenCompanyBuilder={handleOpenCompanyBuilder}
+          onReorganizeDesks={orgAgents.length > 0 ? handleReorganizeDesks : undefined}
           inboxPanel={
             <InboxPanel
               agents={state.agents}
@@ -5258,6 +5379,19 @@ export function OfficeScreen({
               <div className="flex-1 overflow-y-auto">
                 {chatRosterCollapsed ? (
                   <div className="flex flex-col items-center gap-2 px-1 py-2">
+                    {/* Meeting Room — collapsed icon */}
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedChatAgentId("__p2p_meeting_room__"); setChatOpen(true); }}
+                      className={`inline-flex h-8 w-8 items-center justify-center rounded border font-mono text-[10px] transition ${
+                        selectedChatAgentId === "__p2p_meeting_room__"
+                          ? "border-cyan-400/45 bg-cyan-950/50 text-cyan-300"
+                          : "border-cyan-500/20 bg-cyan-900/10 text-cyan-400/50 hover:border-cyan-400/35 hover:bg-cyan-900/25 hover:text-cyan-300"
+                      }`}
+                      title="Meeting Room (P2P)"
+                    >
+                      ⊛
+                    </button>
                     {chatRosterEntries.map((agent) => {
                       const isSelected = agent.id === selectedChatAgentId;
                       return (
@@ -5277,48 +5411,65 @@ export function OfficeScreen({
                       );
                     })}
                   </div>
-                ) : chatRosterEntries.length === 0 ? (
-                  <div className="px-3 py-4 font-mono text-[11px] text-white/30">
-                    No agents.
-                  </div>
                 ) : (
-                  chatRosterEntries.map((agent) => {
-                    const isSelected = agent.id === selectedChatAgentId;
-                    const isRunning = agent.isRunning;
-                    return (
-                      <button
-                        key={agent.id}
-                        type="button"
-                        onClick={() => handleOpenAgentChat(agent.id)}
-                        className={`flex w-full items-center gap-2 px-3 py-2.5 text-left transition-colors ${
-                          isSelected
-                            ? "bg-white/10 text-white"
-                            : "text-white/50 hover:bg-white/5 hover:text-white/80"
-                        }`}
-                      >
-                        <span
-                          className={`h-1.5 w-1.5 shrink-0 rounded-full ${isRunning ? "bg-emerald-400" : "bg-white/20"}`}
-                        />
-                        <span className="min-w-0 flex-1 truncate font-mono text-[11px]">
-                          {agent.name}
-                        </span>
-                        {agent.kind === "remote" ? (
-                          <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.14em] text-cyan-300/60">
-                            Remote
+                  <>
+                    {/* Meeting Room entry in expanded roster */}
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedChatAgentId("__p2p_meeting_room__"); setChatOpen(true); }}
+                      className={`flex w-full items-center gap-2 border-b border-cyan-500/10 px-3 py-2.5 text-left transition-colors ${
+                        selectedChatAgentId === "__p2p_meeting_room__"
+                          ? "bg-cyan-950/40 text-cyan-200"
+                          : "text-cyan-400/50 hover:bg-cyan-900/15 hover:text-cyan-300"
+                      }`}
+                    >
+                      <span className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-cyan-400/60" />
+                      <span className="min-w-0 flex-1 truncate font-mono text-[11px]">Meeting Room</span>
+                      <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.14em] text-cyan-300/50">P2P</span>
+                    </button>
+                    {chatRosterEntries.length === 0 ? (
+                      <div className="px-3 py-4 font-mono text-[11px] text-white/30">No agents.</div>
+                    ) : null}
+                    {chatRosterEntries.map((agent) => {
+                      const isSelected = agent.id === selectedChatAgentId;
+                      const isRunning = agent.isRunning;
+                      return (
+                        <button
+                          key={agent.id}
+                          type="button"
+                          onClick={() => handleOpenAgentChat(agent.id)}
+                          className={`flex w-full items-center gap-2 px-3 py-2.5 text-left transition-colors ${
+                            isSelected
+                              ? "bg-white/10 text-white"
+                              : "text-white/50 hover:bg-white/5 hover:text-white/80"
+                          }`}
+                        >
+                          <span
+                            className={`h-1.5 w-1.5 shrink-0 rounded-full ${isRunning ? "bg-emerald-400" : "bg-white/20"}`}
+                          />
+                          <span className="min-w-0 flex-1 truncate font-mono text-[11px]">
+                            {agent.name}
                           </span>
-                        ) : null}
-                        <span className="sr-only">
-                          {agent.kind === "remote" ? "Remote agent" : "Local agent"}
-                        </span>
-                      </button>
-                    );
-                  })
+                          {agent.kind === "remote" ? (
+                            <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.14em] text-cyan-300/60">
+                              Remote
+                            </span>
+                          ) : null}
+                          <span className="sr-only">
+                            {agent.kind === "remote" ? "Remote agent" : "Local agent"}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </>
                 )}
               </div>
             </div>
 
             <div className="flex min-w-0 flex-1 flex-col">
-              {focusedChatAgent ? (
+              {selectedChatAgentId === "__p2p_meeting_room__" ? (
+                <P2PMeetingRoom />
+              ) : focusedChatAgent ? (
                 <AgentChatPanel
                   agent={focusedChatAgent}
                   isSelected={false}

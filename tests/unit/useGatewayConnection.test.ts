@@ -338,6 +338,68 @@ describe("useGatewayConnection", () => {
     expect(captured.url).toBeNull();
   });
 
+  it("does_not_show_the_connect_screen_when_the_server_stores_a_hermes_token", async () => {
+    const { useGatewayConnection } = await setupAndImportHook(null);
+    const coordinator = {
+      loadSettingsEnvelope: async () => ({
+        settings: {
+          version: 1,
+          gateway: {
+            url: "ws://localhost:18789",
+            // The public settings envelope intentionally strips upstream tokens.
+            token: "",
+            tokenConfigured: true,
+            adapterType: "hermes",
+            profiles: {
+              hermes: {
+                url: "ws://localhost:18789",
+                token: "",
+                tokenConfigured: true,
+              },
+            },
+            lastKnownGood: {
+              url: "ws://localhost:18789",
+              adapterType: "hermes",
+            },
+          },
+          focused: {},
+          avatars: {},
+          analytics: {},
+          voiceReplies: {},
+          office: {},
+          deskAssignments: {},
+          standup: {},
+          taskBoard: {},
+        },
+        localGatewayDefaults: null,
+      }),
+      loadSettings: async () => null,
+      schedulePatch: () => {},
+      flushPending: async () => {},
+    };
+
+    const Probe = () => {
+      const state = useGatewayConnection(coordinator);
+      return createElement(
+        "div",
+        null,
+        createElement("div", { "data-testid": "gatewayUrl" }, state.gatewayUrl),
+        createElement(
+          "div",
+          { "data-testid": "shouldPromptForConnect" },
+          state.shouldPromptForConnect ? "yes" : "no"
+        )
+      );
+    };
+
+    render(createElement(Probe));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("gatewayUrl")).toHaveTextContent("ws://localhost:18789");
+    });
+    expect(screen.getByTestId("shouldPromptForConnect")).toHaveTextContent("no");
+  });
+
   it("uses_a_small_initial_auto_connect_delay_for_hermes_and_demo_only", async () => {
     const mod = await import("@/lib/gateway/GatewayClient");
     expect(mod.resolveInitialGatewayAutoConnectDelayMs("custom")).toBe(0);
